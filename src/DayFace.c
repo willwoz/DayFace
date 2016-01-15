@@ -27,7 +27,7 @@ static struct tm then;
 static time_t seconds_then;
 static int EVENT_MONTH = 11;
 static int EVENT_DAY = 8;
-static int EVENT_YEAR = 114;
+static int EVENT_YEAR = 2014;
 static int EVENT_HOUR = 0;
 static int EVENT_MINUTE = 0;
 
