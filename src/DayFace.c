@@ -2,7 +2,12 @@
 #include "pebble.h"
 #include "PDUtils.h"
 
+
 #define KEY_COUNTFROM 0
+
+#define KEY_DAY 0
+#define KEY_MONTH 1
+#define KEY_YEAR 2
 
 static Window *s_window;
 static Layer *s_simple_bg_layer, *s_date_layer, *s_hands_layer;
@@ -18,6 +23,8 @@ static GPath *s_triangle;
 
 static char s_num_buffer[4], s_day_buffer[6], s_count_buffer[10], s_date_buffer[10],s_battery_buffer[4],s_bt_buffer[1];
 
+static struct tm then;
+static time_t seconds_then;
 static int EVENT_MONTH = 11;
 static int EVENT_DAY = 8;
 static int EVENT_YEAR = 114;
@@ -84,39 +91,57 @@ static void hands_update_proc(Layer *layer, GContext *ctx) {
   graphics_fill_rect(ctx, GRect(bounds.size.w / 2 - 1, bounds.size.h / 2 - 1, 3, 3), 0, GCornerNone);
 }
 
+static void update_counter (struct tm *now_secs) {
+    // Countdown update
+    struct tm *now;
+    time_t seconds_now;
+    int difference;
+    
+    if (now_secs == NULL) {
+        time_t t = time(NULL);
+        now = localtime(&t);
+    } else {
+        now = now_secs;
+    }
+    
+    seconds_now = p_mktime(now);
+
+    // Determine the time difference
+    if (seconds_now>seconds_then) {
+        difference = ((((seconds_now - seconds_then) / 60) / 60) / 24);
+    } else {
+        difference = ((1+(((seconds_then - seconds_now) / 60) / 60) / 24));
+    }
+
+    snprintf (s_count_buffer,sizeof(s_count_buffer),"%d Days",difference);
+    text_layer_set_text(s_count_label, s_count_buffer);
+}
+    
 static void date_update_proc(Layer *layer, GContext *ctx) {
   time_t t = time(NULL);
   struct tm *now = localtime(&t);
-  int difference;
-  time_t seconds_now, seconds_event;
+ 
 
   strftime(s_day_buffer, sizeof(s_day_buffer), "%a", now);
   strftime(s_num_buffer, sizeof(s_num_buffer), "%d", now);
   snprintf(s_date_buffer,sizeof(s_date_buffer),"%s %s",s_day_buffer,s_num_buffer);
   text_layer_set_text(s_day_label, s_date_buffer);
   
-  // Set the current time
+  update_counter(now);
+/*  // Countdown update
   seconds_now = p_mktime(now);
-	
-	now->tm_year = EVENT_YEAR;
-	now->tm_mon = EVENT_MONTH - 1;
-	now->tm_mday = EVENT_DAY;
-	now->tm_hour = EVENT_HOUR;
-	now->tm_min = EVENT_MINUTE;
-	now->tm_sec = 0;
-	
-	seconds_event = p_mktime(now);
-	
-	// Determine the time difference
-  if (seconds_now>seconds_event) {
-	  difference = ((((seconds_now - seconds_event) / 60) / 60) / 24);
+
+
+  // Determine the time difference
+  if (seconds_now>seconds_then) {
+    difference = ((((seconds_now - seconds_then) / 60) / 60) / 24);
   } else {
-    difference = ((1+(((seconds_event - seconds_now) / 60) / 60) / 24));
+    difference = ((1+(((seconds_then - seconds_now) / 60) / 60) / 24));
   }
 
   snprintf (s_count_buffer,sizeof(s_count_buffer),"%d Days",difference);
   text_layer_set_text(s_count_label, s_count_buffer);
-  
+  */
   BatteryChargeState charge_state = battery_state_service_peek();
   if (charge_state.is_charging) {
     snprintf(s_battery_buffer, sizeof(s_battery_buffer), "C");
@@ -136,16 +161,30 @@ static void handle_second_tick(struct tm *tick_time, TimeUnits units_changed) {
 }
 
 static void inbox_received_handler(DictionaryIterator *iter, void *context) {
-  Tuple *countfrom_t = dict_find(iter, KEY_COUNTFROM);
+  Tuple *yearfrom_t = dict_find(iter, KEY_YEAR);
+  Tuple *monthfrom_t = dict_find(iter, KEY_MONTH);
+  Tuple *dayfrom_t = dict_find(iter, KEY_DAY);
+  
+  int year=1,month=2,day=3;
 
-  if (countfrom_t) {
-    char *countfrom = countfrom_t->value->cstring;
+  APP_LOG (APP_LOG_LEVEL_ERROR,"recieved handeler");
+  if (yearfrom_t) {
+    year = yearfrom_t->value->int32;
+    month = monthfrom_t->value->int32;
+    day = dayfrom_t->value->int32;
+    
+    APP_LOG (APP_LOG_LEVEL_ERROR,"Write : year %d, month %d, day %d",year,month,day);
 
-    APP_LOG (APP_LOG_LEVEL_ERROR,"%s",countfrom);
-//    persist_write_int(KEY_BACKGROUND_COLOR, background_color);
-
-//    set_background_and_text_color(background_color);
-  }
+    persist_write_int(KEY_DAY, day);
+    persist_write_int(KEY_MONTH, month);
+    persist_write_int(KEY_YEAR,year);
+    
+    then.tm_year = year - 1900;
+    then.tm_mon = month -1;
+    then.tm_mday = day;
+    seconds_then = p_mktime(&then);
+    update_counter (NULL);
+}
 
 //  if (twenty_four_hour_format_t) {
 //    twenty_four_hour_format = twenty_four_hour_format_t->value->int8;
@@ -157,7 +196,6 @@ static void inbox_received_handler(DictionaryIterator *iter, void *context) {
 }
 
 static void bluetooth_callback(bool connected) {
-  // Show icon if disconnected
   // Show icon if disconnected
   layer_set_hidden(bitmap_layer_get_layer(s_bt_icon_layer), connected);
 
@@ -199,7 +237,19 @@ static void window_load(Window *window) {
   text_layer_set_text_color(s_count_label, GColorWhite);
   text_layer_set_font(s_count_label, fonts_get_system_font(FONT_KEY_GOTHIC_18));
   layer_add_child(s_date_layer, text_layer_get_layer(s_count_label));
-  
+    if (persist_exists(KEY_YEAR)) {
+        int year = persist_read_int(KEY_YEAR);
+        int month = persist_read_int(KEY_MONTH);
+        int day = persist_read_int(KEY_DAY);
+        APP_LOG (APP_LOG_LEVEL_ERROR,"Reading year %d, month %d, day %d",year,month,day);
+        
+        then.tm_year = year - 1900; then.tm_mon = month -1; then.tm_mday = day;
+        
+        seconds_then = p_mktime(&then);
+        APP_LOG (APP_LOG_LEVEL_ERROR,"Current - Init: year %d, month %d, day %d",then.tm_year,then.tm_mon,then.tm_mday);
+    }
+
+   
   s_battery_label = text_layer_create(PBL_IF_ROUND_ELSE(
     GRect(28, 80, 36, 20),
     GRect(11, 80, 36, 20)));
@@ -247,51 +297,57 @@ static void window_unload(Window *window) {
 }
 
 static void init() {
-  s_window = window_create();
-  window_set_window_handlers(s_window, (WindowHandlers) {
-    .load = window_load,
-    .unload = window_unload,
-  });
-  window_stack_push(s_window, true);
+    s_window = window_create();
+    window_set_window_handlers(s_window, (WindowHandlers) {
+        .load = window_load,
+        .unload = window_unload,
+    });
+    window_stack_push(s_window, true);
 
-  s_day_buffer[0] = '\0';
-  s_num_buffer[0] = '\0';
-  s_num_buffer[0] = '\0';
-  s_battery_buffer[0] = '\0';
+    s_day_buffer[0] = '\0';
+    s_num_buffer[0] = '\0';
+    s_num_buffer[0] = '\0';
+    s_battery_buffer[0] = '\0';
   
+    then.tm_year = EVENT_YEAR;
+    then.tm_mon = EVENT_MONTH - 1;
+    then.tm_mday = EVENT_DAY;
+    then.tm_hour = EVENT_HOUR;
+    then.tm_min = EVENT_MINUTE;
+    then.tm_sec = 0;
 
-  // init hand paths
-  s_minute_arrow = gpath_create(&MINUTE_HAND_POINTS);
-  s_hour_arrow = gpath_create(&HOUR_HAND_POINTS);
 
-  Layer *window_layer = window_get_root_layer(s_window);
-  GRect bounds = layer_get_bounds(window_layer);
-  GPoint center = grect_center_point(&bounds);
-  gpath_move_to(s_minute_arrow, center);
-  gpath_move_to(s_hour_arrow, center);
+    // init hand paths
+    s_minute_arrow = gpath_create(&MINUTE_HAND_POINTS);
+    s_hour_arrow = gpath_create(&HOUR_HAND_POINTS);
 
-  for (int i = 0; i < NUM_CLOCK_TICKS; ++i) {
-    s_tick_paths[i] = gpath_create(&ANALOG_BG_POINTS[i]);
-  }
-  
-  TRIANGLE_POINTS.points[0].x = bounds.size.w /2 ;
-  TRIANGLE_POINTS.points[1].x = bounds.size.w / 9;
-  TRIANGLE_POINTS.points[1].y = bounds.size.h * .72;
-  TRIANGLE_POINTS.points[2].x = (bounds.size.w * 8) / 9;
-  TRIANGLE_POINTS.points[2].y = bounds.size.h * .72;
-    
-  s_triangle = gpath_create(&TRIANGLE_POINTS);
+    Layer *window_layer = window_get_root_layer(s_window);
+    GRect bounds = layer_get_bounds(window_layer);
+    GPoint center = grect_center_point(&bounds);
+    gpath_move_to(s_minute_arrow, center);
+    gpath_move_to(s_hour_arrow, center);
 
-  tick_timer_service_subscribe(MINUTE_UNIT, handle_second_tick);
+    for (int i = 0; i < NUM_CLOCK_TICKS; ++i) {
+        s_tick_paths[i] = gpath_create(&ANALOG_BG_POINTS[i]);
+    }
+
+    /* init the triabgle for round or square */
+    TRIANGLE_POINTS.points[0].x = bounds.size.w /2 ;
+    TRIANGLE_POINTS.points[1].x = bounds.size.w / 9;
+    TRIANGLE_POINTS.points[1].y = bounds.size.h * .72;
+    TRIANGLE_POINTS.points[2].x = (bounds.size.w * 8) / 9;
+    TRIANGLE_POINTS.points[2].y = bounds.size.h * .72;
+    s_triangle = gpath_create(&TRIANGLE_POINTS);
+
+    tick_timer_service_subscribe(MINUTE_UNIT, handle_second_tick);
  
-  // Register for Bluetooth connection updates
-  connection_service_subscribe((ConnectionHandlers) {
-    .pebble_app_connection_handler = bluetooth_callback
+    // Register for Bluetooth connection updates
+    connection_service_subscribe((ConnectionHandlers) {
+        .pebble_app_connection_handler = bluetooth_callback
     });
 
-  app_message_register_inbox_received(inbox_received_handler);
-  app_message_open(app_message_inbox_size_maximum(), app_message_outbox_size_maximum());
-
+    app_message_register_inbox_received(inbox_received_handler);
+    app_message_open(app_message_inbox_size_maximum(), app_message_outbox_size_maximum());
 }
 
 static void deinit() {

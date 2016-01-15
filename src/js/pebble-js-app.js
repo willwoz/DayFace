@@ -3,7 +3,7 @@ Pebble.addEventListener('ready', function() {
 });
 
 Pebble.addEventListener('showConfiguration', function() {
-  var url = 'https://76e8c1f4.ngrok.io';
+  var url = 'https://c5bdba89.ngrok.io';
 
   console.log('Showing configuration page: ' + url);
 
@@ -12,12 +12,15 @@ Pebble.addEventListener('showConfiguration', function() {
 
 Pebble.addEventListener('webviewclosed', function(e) {
   var configData = JSON.parse(decodeURIComponent(e.response));
-
+  var datebits = configData.countfrom.split('-');
+  
   console.log('Configuration page returned: ' + JSON.stringify(configData));
 
   if (configData.countfrom) {
     Pebble.sendAppMessage({
-      countfrom: configData.backgroundColor
+      dayfrom: parseInt(datebits[2]),
+      monthfrom: parseInt(datebits[1]),
+      yearfrom: parseInt(datebits[0])
     }, function() {
       console.log('Send successful!');
     }, function() {

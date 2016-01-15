@@ -11,7 +11,9 @@
   },
    "capabilities": ["configurable"],
   "appKeys": {
-    "countfrom": 0
+    "dayfrom": 0,
+    "monthfrom": 1,
+    "yearfrom": 2
   },
   "resources": {
     "media": [

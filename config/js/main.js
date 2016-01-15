@@ -19,7 +19,7 @@ function getAndStoreConfigData() {
   var $countfromDate = $('#countfromDate');
 
   var options = {
-    countfrom: $countfromDate.val(),
+    countfrom: $countfromDate.val()
   };
 
   localStorage.countfrom = options.countfrom;
