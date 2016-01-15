@@ -154,13 +154,13 @@ static void inbox_received_handler(DictionaryIterator *iter, void *context) {
   
   int year=1,month=2,day=3;
 
-  APP_LOG (APP_LOG_LEVEL_ERROR,"recieved handeler");
+  APP_LOG (APP_LOG_LEVEL_INFO,"recieved handeler");
   if (yearfrom_t) {
     year = yearfrom_t->value->int32;
     month = monthfrom_t->value->int32;
     day = dayfrom_t->value->int32;
     
-    APP_LOG (APP_LOG_LEVEL_ERROR,"Write : year %d, month %d, day %d",year,month,day);
+    APP_LOG (APP_LOG_LEVEL_INFO,"Write : year %d, month %d, day %d",year,month,day);
 
     persist_write_int(KEY_DAY, day);
     persist_write_int(KEY_MONTH, month);
@@ -284,19 +284,22 @@ static void init() {
     s_num_buffer[0] = '\0';
     s_battery_buffer[0] = '\0';
   
+    // Setup conter time from presist
     then.tm_hour = EVENT_HOUR;
     then.tm_min = EVENT_MINUTE;
     then.tm_sec = 0;
 
-  if (persist_exists(KEY_YEAR)) {
+    APP_LOG (APP_LOG_LEVEL_INFO,"Exists : %s",(persist_exists(KEY_DAY) ? "TRUE" : "FALSE"));
+  
+    if (persist_exists(KEY_DAY)) {
         int year = persist_read_int(KEY_YEAR);
         int month = persist_read_int(KEY_MONTH);
         int day = persist_read_int(KEY_DAY);
+    
         APP_LOG (APP_LOG_LEVEL_INFO,"Reading year %d, month %d, day %d",year,month,day);
         
         then.tm_year = year - 1900; then.tm_mon = month -1; then.tm_mday = day;
         
-        seconds_then = p_mktime(&then);
         APP_LOG (APP_LOG_LEVEL_INFO,"Current - Init: year %d, month %d, day %d",then.tm_year,then.tm_mon,then.tm_mday);
     } else {
         then.tm_year = EVENT_YEAR - 1900;
@@ -304,8 +307,8 @@ static void init() {
         then.tm_mday = EVENT_DAY;
         APP_LOG (APP_LOG_LEVEL_INFO,"New - Init: year %d, month %d, day %d",then.tm_year,then.tm_mon,then.tm_mday);
     }
-
-
+    seconds_then = p_mktime(&then);
+  
     // init hand paths
     s_minute_arrow = gpath_create(&MINUTE_HAND_POINTS);
     s_hour_arrow = gpath_create(&HOUR_HAND_POINTS);
