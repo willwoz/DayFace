@@ -2,6 +2,7 @@
 #include "pebble.h"
 #include "PDUtils.h"
 
+#define KEY_COUNTFROM 0
 
 static Window *s_window;
 static Layer *s_simple_bg_layer, *s_date_layer, *s_hands_layer;
@@ -134,6 +135,27 @@ static void handle_second_tick(struct tm *tick_time, TimeUnits units_changed) {
   layer_mark_dirty(window_get_root_layer(s_window));
 }
 
+static void inbox_received_handler(DictionaryIterator *iter, void *context) {
+  Tuple *countfrom_t = dict_find(iter, KEY_COUNTFROM);
+
+  if (countfrom_t) {
+    char *countfrom = countfrom_t->value->cstring;
+
+    APP_LOG (APP_LOG_LEVEL_ERROR,"%s",countfrom);
+//    persist_write_int(KEY_BACKGROUND_COLOR, background_color);
+
+//    set_background_and_text_color(background_color);
+  }
+
+//  if (twenty_four_hour_format_t) {
+//    twenty_four_hour_format = twenty_four_hour_format_t->value->int8;
+
+//    persist_write_int(KEY_TWENTY_FOUR_HOUR_FORMAT, twenty_four_hour_format);
+//
+//    update_time();
+//  }
+}
+
 static void bluetooth_callback(bool connected) {
   // Show icon if disconnected
   // Show icon if disconnected
@@ -264,8 +286,11 @@ static void init() {
  
   // Register for Bluetooth connection updates
   connection_service_subscribe((ConnectionHandlers) {
-  .pebble_app_connection_handler = bluetooth_callback
-});
+    .pebble_app_connection_handler = bluetooth_callback
+    });
+
+  app_message_register_inbox_received(inbox_received_handler);
+  app_message_open(app_message_inbox_size_maximum(), app_message_outbox_size_maximum());
 
 }
 
