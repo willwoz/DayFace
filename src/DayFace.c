@@ -128,20 +128,7 @@ static void date_update_proc(Layer *layer, GContext *ctx) {
   text_layer_set_text(s_day_label, s_date_buffer);
   
   update_counter(now);
-/*  // Countdown update
-  seconds_now = p_mktime(now);
 
-
-  // Determine the time difference
-  if (seconds_now>seconds_then) {
-    difference = ((((seconds_now - seconds_then) / 60) / 60) / 24);
-  } else {
-    difference = ((1+(((seconds_then - seconds_now) / 60) / 60) / 24));
-  }
-
-  snprintf (s_count_buffer,sizeof(s_count_buffer),"%d Days",difference);
-  text_layer_set_text(s_count_label, s_count_buffer);
-  */
   BatteryChargeState charge_state = battery_state_service_peek();
   if (charge_state.is_charging) {
     snprintf(s_battery_buffer, sizeof(s_battery_buffer), "C");
@@ -237,18 +224,6 @@ static void window_load(Window *window) {
   text_layer_set_text_color(s_count_label, GColorWhite);
   text_layer_set_font(s_count_label, fonts_get_system_font(FONT_KEY_GOTHIC_18));
   layer_add_child(s_date_layer, text_layer_get_layer(s_count_label));
-    if (persist_exists(KEY_YEAR)) {
-        int year = persist_read_int(KEY_YEAR);
-        int month = persist_read_int(KEY_MONTH);
-        int day = persist_read_int(KEY_DAY);
-        APP_LOG (APP_LOG_LEVEL_ERROR,"Reading year %d, month %d, day %d",year,month,day);
-        
-        then.tm_year = year - 1900; then.tm_mon = month -1; then.tm_mday = day;
-        
-        seconds_then = p_mktime(&then);
-        APP_LOG (APP_LOG_LEVEL_ERROR,"Current - Init: year %d, month %d, day %d",then.tm_year,then.tm_mon,then.tm_mday);
-    }
-
    
   s_battery_label = text_layer_create(PBL_IF_ROUND_ELSE(
     GRect(28, 80, 36, 20),
@@ -309,12 +284,26 @@ static void init() {
     s_num_buffer[0] = '\0';
     s_battery_buffer[0] = '\0';
   
-    then.tm_year = EVENT_YEAR;
-    then.tm_mon = EVENT_MONTH - 1;
-    then.tm_mday = EVENT_DAY;
     then.tm_hour = EVENT_HOUR;
     then.tm_min = EVENT_MINUTE;
     then.tm_sec = 0;
+
+  if (persist_exists(KEY_YEAR)) {
+        int year = persist_read_int(KEY_YEAR);
+        int month = persist_read_int(KEY_MONTH);
+        int day = persist_read_int(KEY_DAY);
+        APP_LOG (APP_LOG_LEVEL_INFO,"Reading year %d, month %d, day %d",year,month,day);
+        
+        then.tm_year = year - 1900; then.tm_mon = month -1; then.tm_mday = day;
+        
+        seconds_then = p_mktime(&then);
+        APP_LOG (APP_LOG_LEVEL_INFO,"Current - Init: year %d, month %d, day %d",then.tm_year,then.tm_mon,then.tm_mday);
+    } else {
+        then.tm_year = EVENT_YEAR - 1900;
+        then.tm_mon = EVENT_MONTH - 1;
+        then.tm_mday = EVENT_DAY;
+        APP_LOG (APP_LOG_LEVEL_INFO,"New - Init: year %d, month %d, day %d",then.tm_year,then.tm_mon,then.tm_mday);
+    }
 
 
     // init hand paths
