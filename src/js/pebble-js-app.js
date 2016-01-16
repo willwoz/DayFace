@@ -3,7 +3,7 @@ Pebble.addEventListener('ready', function() {
 });
 
 Pebble.addEventListener('showConfiguration', function() {
-  var url = 'https://c5bdba89.ngrok.io';
+  var url = 'https://f9cd91d1.ngrok.io/';
 
   console.log('Showing configuration page: ' + url);
 
