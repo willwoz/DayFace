@@ -11,8 +11,8 @@ struct dayface_config {
     uint8_t day;
     uint8_t month;
     uint8_t showseconds; /*show seconds*/
-    uint8_t countformat;  /*days,months,year?*/
     uint8_t showtriangle; /* show triangle */
+    uint32_t countformat;  /*days,months,year?*/
 } __attribute__((__packed__)) global_config;
 
 #define FMT_DAYS    0
@@ -27,8 +27,8 @@ struct dayface_config {
 #define KEY_DAY         1
 #define KEY_MONTH       2
 #define KEY_SHOWSECONDS 3
-#define KEY_FORMAT      4
-#define KEY_SHOWTRIANGLE 5
+#define KEY_SHOWTRIANGLE 4
+#define KEY_FORMAT      5
 
 static const struct GPathInfo ANALOG_BG_POINTS[] = {
   { 4, (GPoint []){ /*1*/

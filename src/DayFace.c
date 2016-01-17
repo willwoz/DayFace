@@ -140,8 +140,8 @@ static void inbox_received_handler(DictionaryIterator *iter, void *context) {
     Tuple *monthfrom_t = dict_find(iter, KEY_MONTH);
     Tuple *dayfrom_t = dict_find(iter, KEY_DAY);
     Tuple *showseconds_t = dict_find(iter, KEY_SHOWSECONDS);
-    Tuple *format_t = dict_find(iter, KEY_FORMAT);
     Tuple *showtriangle_t = dict_find(iter, KEY_SHOWTRIANGLE);
+    Tuple *format_t = dict_find(iter, KEY_FORMAT);
 
   
     APP_LOG (APP_LOG_LEVEL_INFO,"INFO: Returned from settings");
@@ -166,7 +166,7 @@ static void inbox_received_handler(DictionaryIterator *iter, void *context) {
   
     if (format_t) {
         APP_LOG (APP_LOG_LEVEL_INFO,"INFO: Format changed");
-        global_config.countformat = format_t->value->int8;
+        global_config.countformat = format_t->value->int32;
     }
     
     if (showtriangle_t) {
@@ -174,7 +174,7 @@ static void inbox_received_handler(DictionaryIterator *iter, void *context) {
         global_config.showtriangle = showtriangle_t->value->int8;
     }
   
-    APP_LOG (APP_LOG_LEVEL_INFO,"Configged : year - %d, month - %d, - day %d, seconds %d, format %d, triangle %d",(int)global_config.year, global_config.month, global_config.day, global_config.showseconds, global_config.countformat, global_config.showtriangle);
+    APP_LOG (APP_LOG_LEVEL_INFO,"Configged : year - %d, month - %d, - day %d, seconds %d, format %d, triangle %d",(int)global_config.year, global_config.month, global_config.day, global_config.showseconds, (int)global_config.countformat, global_config.showtriangle);
     
 }
 
@@ -283,7 +283,7 @@ static void init() {
     if (persist_exists(KEY_STRUCTURE)) {
         persist_read_data (KEY_STRUCTURE,&global_config,sizeof(global_config));
     
-        APP_LOG (APP_LOG_LEVEL_INFO,"Read : year - %d, month - %d, - day %d, seconds %d, format %d, triangle %d",(int)global_config.year, global_config.month, global_config.day, global_config.showseconds, global_config.countformat, global_config.showtriangle);
+        APP_LOG (APP_LOG_LEVEL_INFO,"Read : year - %d, month - %d, - day %d, seconds %d, format %d, triangle %d",(int)global_config.year, global_config.month, global_config.day, global_config.showseconds, (int)global_config.countformat, global_config.showtriangle);
     } else {
         global_config.year = 2014;
         global_config.month = 11;
@@ -292,7 +292,7 @@ static void init() {
         global_config.countformat = FMT_DAYS;
         global_config.showtriangle = 1;
 
-        APP_LOG (APP_LOG_LEVEL_INFO,"Set : year - %d, month - %d, - day %d, seconds %d, format %d, triangle %d",(int)global_config.year, global_config.month, global_config.day, global_config.showseconds, global_config.countformat, global_config.showtriangle);
+        APP_LOG (APP_LOG_LEVEL_INFO,"Set : year - %d, month - %d, - day %d, seconds %d, format %d, triangle %d",(int)global_config.year, global_config.month, global_config.day, global_config.showseconds, (int)global_config.countformat, global_config.showtriangle);
     }
     // Setup conter time from presist
     then.tm_hour = 0;
