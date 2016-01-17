@@ -100,12 +100,39 @@ static void update_counter (struct tm *now_secs) {
 
     // Determine the time difference
     if (seconds_now>seconds_then) {
-        difference = ((((seconds_now - seconds_then) / 60) / 60) / 24);
+        difference = day_number(now->tm_year+1900,now->tm_mon+1,now->tm_mday) - day_number(then.tm_year+1900,then.tm_mon+1,then.tm_mday);
+        //differene = ((((seconds_now - seconds_then) / 60) / 60) / 24);
     } else {
-        difference = ((1+(((seconds_then - seconds_now) / 60) / 60) / 24));
+        //difference = ((1+(((seconds_then - seconds_now) / 60) / 60) / 24));
+        difference = day_number(then.tm_year,then.tm_mon,then.tm_mday) - day_number(now->tm_year,now->tm_mon,now->tm_mday);
+                difference++;
     }
-
     snprintf (s_count_buffer,sizeof(s_count_buffer),"%d Days",difference);
+//            break;
+//        case FMT_MONTHS:
+//            if (seconds_now>seconds_then) {
+//                difference = (now->tm_year - then.tm_year) * 12;
+//                if (then.tm_mon < now->tm_mon) {
+//                    difference += (then.tm_mon - now->tm_mon);
+//                } else {
+//                    difference += (now->tm_mon - then.tm_mon);
+ //                   if (then.tm_mday >= now->tm_mday) {
+  //                      difference++;
+   //                 }
+//                }
+//            } else {
+//                difference = (then.tm_year - now->tm_year) * 12;
+//               if (then.tm_mon <= now->tm_mon) {
+//                    difference += (then.tm_mon - now->tm_mon);
+//                } else {
+//                    difference += (now->tm_mon - then.tm_mon);
+//                }
+//                if (then.tm_mday >= now->tm_mday) {
+//                    difference++;
+//                }
+//            }
+//            snprintf (s_count_buffer,sizeof(s_count_buffer),"%d Months",difference);
+//    }
     text_layer_set_text(s_count_label, s_count_buffer);
 }
     

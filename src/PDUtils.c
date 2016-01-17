@@ -78,6 +78,12 @@ time_t p_mktime (struct tm *timeptr) {
   return tt;
 }
 
+int day_number (int y,int m,int d) {
+    m = (m + 9) % 12;
+    y = y - m/10;
+    return (365*y + y/4 - y/100 + y/400 + (m*306 + 5)/10 + ( d - 1 ));
+}
+
 char *p_strtok(char *s1, const char *s2) {
   static char *old = NULL;
   char *p;
