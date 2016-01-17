@@ -11,7 +11,7 @@ struct dayface_config {
     uint8_t day;
     uint8_t month;
     uint8_t showseconds; /*show seconds*/
-    uint8_t format;  /*days,months,year?*/
+    uint8_t countformat;  /*days,months,year?*/
     uint8_t showtriangle; /* show triangle */
 } __attribute__((__packed__)) global_config;
 

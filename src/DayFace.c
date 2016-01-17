@@ -147,21 +147,35 @@ static void inbox_received_handler(DictionaryIterator *iter, void *context) {
     APP_LOG (APP_LOG_LEVEL_INFO,"INFO: Returned from settings");
     
     if (yearfrom_t) {
+        APP_LOG (APP_LOG_LEVEL_INFO,"INFO: Date Changed");
         global_config.year = yearfrom_t->value->int32;
-        global_config.month = monthfrom_t->value->int32;
-        global_config.day = dayfrom_t->value->int32;
-        global_config.showseconds = showseconds_t->value->int8;
-        global_config.format = format_t->value->int32;
-        global_config.showtriangle = showtriangle_t->value->int8;
-    
-        APP_LOG (APP_LOG_LEVEL_INFO,"Configged : year - %d, month - %d, - day %d, seconds %d, format %d, triangle %d",(int)global_config.year, global_config.month, global_config.day, global_config.showseconds, global_config.format, global_config.showtriangle);
-    
+        global_config.month = monthfrom_t->value->int8;
+        global_config.day = dayfrom_t->value->int8;
+
         then.tm_year = global_config.year - 1900;
         then.tm_mon = global_config.month -1;
         then.tm_mday = global_config.day;
         seconds_then = p_mktime(&then);
         update_counter (NULL);
     }
+  
+    if (showseconds_t) {
+        APP_LOG (APP_LOG_LEVEL_INFO,"INFO: Seconds CHanged");
+        global_config.showseconds = showseconds_t->value->int8;
+    }
+  
+    if (format_t) {
+        APP_LOG (APP_LOG_LEVEL_INFO,"INFO: Format changed");
+        global_config.countformat = format_t->value->int8;
+    }
+    
+    if (showtriangle_t) {
+        APP_LOG (APP_LOG_LEVEL_INFO,"INFO: Triangle Changed");
+        global_config.showtriangle = showtriangle_t->value->int8;
+    }
+  
+    APP_LOG (APP_LOG_LEVEL_INFO,"Configged : year - %d, month - %d, - day %d, seconds %d, format %d, triangle %d",(int)global_config.year, global_config.month, global_config.day, global_config.showseconds, global_config.countformat, global_config.showtriangle);
+    
 }
 
 static void bluetooth_callback(bool connected) {
@@ -269,16 +283,16 @@ static void init() {
     if (persist_exists(KEY_STRUCTURE)) {
         persist_read_data (KEY_STRUCTURE,&global_config,sizeof(global_config));
     
-        APP_LOG (APP_LOG_LEVEL_INFO,"Read : year - %d, month - %d, - day %d, seconds %d, format %d, triangle %d",(int)global_config.year, global_config.month, global_config.day, global_config.showseconds, global_config.format, global_config.showtriangle);
+        APP_LOG (APP_LOG_LEVEL_INFO,"Read : year - %d, month - %d, - day %d, seconds %d, format %d, triangle %d",(int)global_config.year, global_config.month, global_config.day, global_config.showseconds, global_config.countformat, global_config.showtriangle);
     } else {
         global_config.year = 2014;
         global_config.month = 11;
         global_config.day = 8;
         global_config.showseconds = 1;
-        global_config.format = FMT_DAYS;
+        global_config.countformat = FMT_DAYS;
         global_config.showtriangle = 1;
 
-        APP_LOG (APP_LOG_LEVEL_INFO,"Set : year - %d, month - %d, - day %d, seconds %d, format %d, triangle %d",(int)global_config.year, global_config.month, global_config.day, global_config.showseconds, global_config.format, global_config.showtriangle);
+        APP_LOG (APP_LOG_LEVEL_INFO,"Set : year - %d, month - %d, - day %d, seconds %d, format %d, triangle %d",(int)global_config.year, global_config.month, global_config.day, global_config.showseconds, global_config.countformat, global_config.showtriangle);
     }
     // Setup conter time from presist
     then.tm_hour = 0;

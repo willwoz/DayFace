@@ -1,11 +1,11 @@
 {
     "appKeys": {
-        "yearfrom": 0,
+        "countformat": 4,
         "dayfrom": 1,
         "monthfrom": 2,
-        "showseconds" : 3,
-        "format": 4,
-        "showtriangle": 5
+        "showseconds": 3,
+        "showtriangle": 5,
+        "yearfrom": 0
     },
     "capabilities": [
         "configurable"

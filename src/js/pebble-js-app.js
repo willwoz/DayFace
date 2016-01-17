@@ -22,9 +22,9 @@ Pebble.addEventListener('webviewclosed', function(e) {
       yearfrom: parseInt(datebits[0]),
       dayfrom: parseInt(datebits[2]),
       monthfrom: parseInt(datebits[1]),
-      showseconds: praseInt(configData.showseconds),
-      showformat: praseInt(configData.format),
-      showtriangle: praseInt(configData.showtriabgle)
+      showseconds: configData.showseconds,
+      countformat: parseInt(configData.countformat),
+      showtriangle: configData.showtriangle
     }, function() {
       console.log('Send successful!');
     }, function() {
