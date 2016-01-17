@@ -45,38 +45,40 @@ static void bg_update_proc(Layer *layer, GContext *ctx) {
 }
 
 static void hands_update_proc(Layer *layer, GContext *ctx) {
-  GRect bounds = layer_get_bounds(layer);
-  GPoint center = grect_center_point(&bounds);
+    GRect bounds = layer_get_bounds(layer);
+    GPoint center = grect_center_point(&bounds);
 
-//  const int16_t second_hand_length = PBL_IF_ROUND_ELSE((bounds.size.w / 2) - 19, bounds.size.w / 2);
+    const int16_t second_hand_length = PBL_IF_ROUND_ELSE((bounds.size.w / 2) - 19, bounds.size.w / 2);
 
-  time_t now = time(NULL);
-  struct tm *t = localtime(&now);
-//  int32_t second_angle = TRIG_MAX_ANGLE * t->tm_sec / 60;
-//  GPoint second_hand = {
-//    .x = (int16_t)(sin_lookup(second_angle) * (int32_t)second_hand_length / TRIG_MAX_RATIO) + center.x,
-//    .y = (int16_t)(-cos_lookup(second_angle) * (int32_t)second_hand_length / TRIG_MAX_RATIO) + center.y,
-//  };
+    time_t now = time(NULL);
+    struct tm *t = localtime(&now);
+    int32_t second_angle = TRIG_MAX_ANGLE * t->tm_sec / 60;
+    GPoint second_hand = {
+        .x = (int16_t)(sin_lookup(second_angle) * (int32_t)second_hand_length / TRIG_MAX_RATIO) + center.x,
+        .y = (int16_t)(-cos_lookup(second_angle) * (int32_t)second_hand_length / TRIG_MAX_RATIO) + center.y,
+    };
 
   // second hand
-//  graphics_context_set_stroke_color(ctx, GColorRed);
-//  graphics_draw_line(ctx, second_hand, center);
+    if (global_config.showseconds == 1) {
+        graphics_context_set_stroke_color(ctx, GColorRed);
+        graphics_draw_line(ctx, second_hand, center);
+    }
 
   // minute/hour hand
-  graphics_context_set_fill_color(ctx, GColorWhite);
-  graphics_context_set_stroke_color(ctx, GColorBlack);
+    graphics_context_set_fill_color(ctx, GColorWhite);
+    graphics_context_set_stroke_color(ctx, GColorBlack);
 
-  gpath_rotate_to(s_minute_arrow, TRIG_MAX_ANGLE * t->tm_min / 60);
-  gpath_draw_filled(ctx, s_minute_arrow);
-  gpath_draw_outline(ctx, s_minute_arrow);
+    gpath_rotate_to(s_minute_arrow, TRIG_MAX_ANGLE * t->tm_min / 60);
+    gpath_draw_filled(ctx, s_minute_arrow);
+    gpath_draw_outline(ctx, s_minute_arrow);
 
-  gpath_rotate_to(s_hour_arrow, (TRIG_MAX_ANGLE * (((t->tm_hour % 12) * 6) + (t->tm_min / 10))) / (12 * 6));
-  gpath_draw_filled(ctx, s_hour_arrow);
-  gpath_draw_outline(ctx, s_hour_arrow);
+    gpath_rotate_to(s_hour_arrow, (TRIG_MAX_ANGLE * (((t->tm_hour % 12) * 6) + (t->tm_min / 10))) / (12 * 6));
+    gpath_draw_filled(ctx, s_hour_arrow);
+    gpath_draw_outline(ctx, s_hour_arrow);
 
-  // dot in the middle
-  graphics_context_set_fill_color(ctx, GColorBlack);
-  graphics_fill_rect(ctx, GRect(bounds.size.w / 2 - 1, bounds.size.h / 2 - 1, 3, 3), 0, GCornerNone);
+    // dot in the middle
+    graphics_context_set_fill_color(ctx, GColorBlack);
+    graphics_fill_rect(ctx, GRect(bounds.size.w / 2 - 1, bounds.size.h / 2 - 1, 3, 3), 0, GCornerNone);
 }
 
 static void update_counter (struct tm *now_secs) {
@@ -144,10 +146,10 @@ static void inbox_received_handler(DictionaryIterator *iter, void *context) {
     Tuple *format_t = dict_find(iter, KEY_FORMAT);
 
   
-    APP_LOG (APP_LOG_LEVEL_INFO,"INFO: Returned from settings");
+    APP_LOG (APP_LOG_LEVEL_DEBUG,"INFO: Returned from settings");
     
     if (yearfrom_t) {
-        APP_LOG (APP_LOG_LEVEL_INFO,"INFO: Date Changed");
+        APP_LOG (APP_LOG_LEVEL_DEBUG,"INFO: Date Changed");
         global_config.year = yearfrom_t->value->int32;
         global_config.month = monthfrom_t->value->int8;
         global_config.day = dayfrom_t->value->int8;
@@ -160,21 +162,29 @@ static void inbox_received_handler(DictionaryIterator *iter, void *context) {
     }
   
     if (showseconds_t) {
-        APP_LOG (APP_LOG_LEVEL_INFO,"INFO: Seconds CHanged");
+        APP_LOG (APP_LOG_LEVEL_DEBUG,"INFO: Seconds CHanged");
         global_config.showseconds = showseconds_t->value->int8;
+        tick_timer_service_unsubscribe();
+        if (global_config.showseconds == 1) {
+            tick_timer_service_subscribe(SECOND_UNIT, handle_second_tick);
+        } else {
+            tick_timer_service_subscribe(MINUTE_UNIT, handle_second_tick);
+        }
+
+
     }
   
     if (format_t) {
-        APP_LOG (APP_LOG_LEVEL_INFO,"INFO: Format changed");
+        APP_LOG (APP_LOG_LEVEL_DEBUG,"INFO: Format changed");
         global_config.countformat = format_t->value->int32;
     }
     
     if (showtriangle_t) {
-        APP_LOG (APP_LOG_LEVEL_INFO,"INFO: Triangle Changed");
+        APP_LOG (APP_LOG_LEVEL_DEBUG,"INFO: Triangle Changed");
         global_config.showtriangle = showtriangle_t->value->int8;
     }
   
-    APP_LOG (APP_LOG_LEVEL_INFO,"Configged : year - %d, month - %d, - day %d, seconds %d, format %d, triangle %d",(int)global_config.year, global_config.month, global_config.day, global_config.showseconds, (int)global_config.countformat, global_config.showtriangle);
+    APP_LOG (APP_LOG_LEVEL_DEBUG,"Configged : year - %d, month - %d, - day %d, seconds %d, format %d, triangle %d",(int)global_config.year, global_config.month, global_config.day, global_config.showseconds, (int)global_config.countformat, global_config.showtriangle);
     
 }
 
@@ -190,66 +200,68 @@ static void bluetooth_callback(bool connected) {
 
 
 static void window_load(Window *window) {
-  Layer *window_layer = window_get_root_layer(window);
-  GRect bounds = layer_get_bounds(window_layer);
+    Layer *window_layer = window_get_root_layer(window);
+    GRect bounds = layer_get_bounds(window_layer);
 
-  s_simple_bg_layer = layer_create(bounds);
-  layer_set_update_proc(s_simple_bg_layer, bg_update_proc);
-  layer_add_child(window_layer, s_simple_bg_layer);
+    s_simple_bg_layer = layer_create(bounds);
+    layer_set_update_proc(s_simple_bg_layer, bg_update_proc);
+    layer_add_child(window_layer, s_simple_bg_layer);
 
-  s_date_layer = layer_create(bounds);
-  layer_set_update_proc(s_date_layer, date_update_proc);
-  layer_add_child(window_layer, s_date_layer);
+    s_date_layer = layer_create(bounds);
+    layer_set_update_proc(s_date_layer, date_update_proc);
+    layer_add_child(window_layer, s_date_layer);
 
-  s_day_label = text_layer_create(PBL_IF_ROUND_ELSE(
-    GRect(48, 40, 90, 20),
-    GRect(31, 40, 90, 20)));
-  text_layer_set_text_alignment(s_day_label,GTextAlignmentCenter);
-  text_layer_set_text(s_day_label, s_day_buffer);
-  text_layer_set_background_color(s_day_label, GColorBlack);
-  text_layer_set_text_color(s_day_label, GColorWhite);
-  text_layer_set_font(s_day_label, fonts_get_system_font(FONT_KEY_GOTHIC_18));
-  layer_add_child(s_date_layer, text_layer_get_layer(s_day_label));
+    s_day_label = text_layer_create(PBL_IF_ROUND_ELSE(
+        GRect(48, 40, 90, 20),
+        GRect(31, 40, 90, 20)));
+    text_layer_set_text_alignment(s_day_label,GTextAlignmentCenter);
+    text_layer_set_text(s_day_label, s_day_buffer);
+    text_layer_set_background_color(s_day_label, GColorBlack);
+    text_layer_set_text_color(s_day_label, GColorWhite);
+    text_layer_set_font(s_day_label, fonts_get_system_font(FONT_KEY_GOTHIC_18));
+    layer_add_child(s_date_layer, text_layer_get_layer(s_day_label));
 
-  s_count_label = text_layer_create(PBL_IF_ROUND_ELSE(
-    GRect(48, 114, 90, 20),
-    GRect(31, 114, 90, 20)));
-  text_layer_set_text_alignment(s_count_label,GTextAlignmentCenter);
-  text_layer_set_text(s_count_label, s_count_buffer);
-  text_layer_set_background_color(s_count_label, GColorBlack);
-  text_layer_set_text_color(s_count_label, GColorWhite);
-  text_layer_set_font(s_count_label, fonts_get_system_font(FONT_KEY_GOTHIC_18));
-  layer_add_child(s_date_layer, text_layer_get_layer(s_count_label));
-   
-  s_battery_label = text_layer_create(PBL_IF_ROUND_ELSE(
-    GRect(28, 80, 36, 20),
-    GRect(11, 80, 36, 20)));
-  text_layer_set_text_alignment(s_battery_label,GTextAlignmentCenter);
-  text_layer_set_text(s_battery_label, s_battery_buffer);
-  text_layer_set_background_color(s_battery_label, GColorBlack);
-  text_layer_set_text_color(s_battery_label, GColorWhite);
-  text_layer_set_font(s_battery_label, fonts_get_system_font(FONT_KEY_GOTHIC_14));
-  layer_add_child(s_date_layer, text_layer_get_layer(s_battery_label));
- 
-  // Create the Bluetooth icon GBitmap
-  s_bt_icon_bitmap = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_BT_ICON_GLASS);
+    s_count_label = text_layer_create(PBL_IF_ROUND_ELSE(
+        GRect(48, 114, 90, 20),
+        GRect(31, 114, 90, 20)));
+    text_layer_set_text_alignment(s_count_label,GTextAlignmentCenter);
+    text_layer_set_text(s_count_label, s_count_buffer);
+    text_layer_set_background_color(s_count_label, GColorBlack);
+    text_layer_set_text_color(s_count_label, GColorWhite);
+    text_layer_set_font(s_count_label, fonts_get_system_font(FONT_KEY_GOTHIC_18));
+    layer_add_child(s_date_layer, text_layer_get_layer(s_count_label));
+    
+    s_battery_label = text_layer_create(PBL_IF_ROUND_ELSE(
+        GRect(28, 80, 36, 20),
+        GRect(11, 80, 36, 20)));
+    text_layer_set_text_alignment(s_battery_label,GTextAlignmentCenter);
+    text_layer_set_text(s_battery_label, s_battery_buffer);
+    text_layer_set_background_color(s_battery_label, GColorBlack);
+    text_layer_set_text_color(s_battery_label, GColorWhite);
+    text_layer_set_font(s_battery_label, fonts_get_system_font(FONT_KEY_GOTHIC_14));
+    layer_add_child(s_date_layer, text_layer_get_layer(s_battery_label));
+    
+    // Create the Bluetooth icon GBitmap
+    s_bt_icon_bitmap = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_BT_ICON_GLASS);
 
-  // Create the BitmapLayer to display the GBitmap
-  s_bt_icon_layer = bitmap_layer_create(PBL_IF_ROUND_ELSE(
-    GRect(125, 80, 20, 20),
-    GRect(108, 80, 20, 20)));
-  bitmap_layer_set_bitmap(s_bt_icon_layer, s_bt_icon_bitmap);
-  layer_add_child(window_layer, bitmap_layer_get_layer(s_bt_icon_layer));
+    // Create the BitmapLayer to display the GBitmap
+    s_bt_icon_layer = bitmap_layer_create(PBL_IF_ROUND_ELSE(
+        GRect(125, 80, 20, 20),
+        GRect(108, 80, 20, 20)));
+    bitmap_layer_set_bitmap(s_bt_icon_layer, s_bt_icon_bitmap);
+    layer_add_child(window_layer, bitmap_layer_get_layer(s_bt_icon_layer));
 
-  s_hands_layer = layer_create(bounds);
-  
-  bluetooth_callback(connection_service_peek_pebble_app_connection());
+    s_hands_layer = layer_create(bounds);
+    
+    bluetooth_callback(connection_service_peek_pebble_app_connection());
 
-  layer_set_update_proc(s_hands_layer, hands_update_proc);
-  layer_add_child(window_layer, s_hands_layer);
-  
-  // Show the correct state of the BT connection from the start
-  bluetooth_callback(connection_service_peek_pebble_app_connection());
+    layer_set_update_proc(s_hands_layer, hands_update_proc);
+    layer_add_child(window_layer, s_hands_layer);
+    
+    APP_LOG (APP_LOG_LEVEL_DEBUG,"Read : year - %d, month - %d, - day %d, seconds %d, format %d, triangle %d",(int)global_config.year, global_config.month, global_config.day, global_config.showseconds, (int)global_config.countformat, global_config.showtriangle);
+    
+    // Show the correct state of the BT connection from the start
+    bluetooth_callback(connection_service_peek_pebble_app_connection());
 }
 
 static void window_unload(Window *window) {
@@ -283,7 +295,7 @@ static void init() {
     if (persist_exists(KEY_STRUCTURE)) {
         persist_read_data (KEY_STRUCTURE,&global_config,sizeof(global_config));
     
-        APP_LOG (APP_LOG_LEVEL_INFO,"Read : year - %d, month - %d, - day %d, seconds %d, format %d, triangle %d",(int)global_config.year, global_config.month, global_config.day, global_config.showseconds, (int)global_config.countformat, global_config.showtriangle);
+        APP_LOG (APP_LOG_LEVEL_DEBUG,"Read : year - %d, month - %d, - day %d, seconds %d, format %d, triangle %d",(int)global_config.year, global_config.month, global_config.day, global_config.showseconds, (int)global_config.countformat, global_config.showtriangle);
     } else {
         global_config.year = 2014;
         global_config.month = 11;
@@ -292,7 +304,7 @@ static void init() {
         global_config.countformat = FMT_DAYS;
         global_config.showtriangle = 1;
 
-        APP_LOG (APP_LOG_LEVEL_INFO,"Set : year - %d, month - %d, - day %d, seconds %d, format %d, triangle %d",(int)global_config.year, global_config.month, global_config.day, global_config.showseconds, (int)global_config.countformat, global_config.showtriangle);
+        APP_LOG (APP_LOG_LEVEL_DEBUG,"Set : year - %d, month - %d, - day %d, seconds %d, format %d, triangle %d",(int)global_config.year, global_config.month, global_config.day, global_config.showseconds, (int)global_config.countformat, global_config.showtriangle);
     }
     // Setup conter time from presist
     then.tm_hour = 0;
@@ -302,6 +314,10 @@ static void init() {
     then.tm_mon = global_config.month -1;
     then.tm_mday = global_config.day;
     seconds_then = p_mktime(&then);
+    
+    APP_LOG (APP_LOG_LEVEL_DEBUG,"What the Fuck : year - %d, month - %d, - day %d, seconds %d, format %d, triangle %d",(int)global_config.year, global_config.month, global_config.day, global_config.showseconds, (int)global_config.countformat, global_config.showtriangle);
+    
+    update_counter (NULL);
   
     // init hand paths
     s_minute_arrow = gpath_create(&MINUTE_HAND_POINTS);
