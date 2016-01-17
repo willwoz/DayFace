@@ -20,28 +20,30 @@ static struct tm then;
 static time_t seconds_then;
 
 static void bg_update_proc(Layer *layer, GContext *ctx) {
-  int i;
-  const int x_offset = PBL_IF_ROUND_ELSE(18, 0);
-  const int y_offset = PBL_IF_ROUND_ELSE(6, 0);
-  
-  graphics_context_set_fill_color(ctx, GColorBlack);
-  graphics_fill_rect(ctx, layer_get_bounds(layer), 0, GCornerNone);
-  
-  graphics_context_set_fill_color(ctx, COLOR_FALLBACK(GColorBlueMoon,GColorWhite));
-  graphics_context_set_stroke_color(ctx, COLOR_FALLBACK(GColorBlueMoon,GColorWhite));
-  gpath_draw_outline(ctx, s_triangle);
-  
-  graphics_context_set_fill_color(ctx, GColorWhite);
-  for (i = 0; i < NUM_CLOCK_TICKS_WHITE; ++i) {
-    gpath_move_to(s_tick_paths[i], GPoint(x_offset, y_offset));
-    gpath_draw_filled(ctx, s_tick_paths[i]);
-  }
-  
-  graphics_context_set_fill_color(ctx, COLOR_FALLBACK(GColorRed,GColorWhite));
-  for (; i < NUM_CLOCK_TICKS_RED; ++i) {
-    gpath_move_to(s_tick_paths[i], GPoint(x_offset, y_offset));
-    gpath_draw_filled(ctx, s_tick_paths[i]);
-  }
+    int i;
+    const int x_offset = PBL_IF_ROUND_ELSE(18, 0);
+    const int y_offset = PBL_IF_ROUND_ELSE(6, 0);
+    
+    graphics_context_set_fill_color(ctx, GColorBlack);
+    graphics_fill_rect(ctx, layer_get_bounds(layer), 0, GCornerNone);
+    
+    if (global_config.showtriangle == 1) {
+        graphics_context_set_fill_color(ctx, COLOR_FALLBACK(GColorBlueMoon,GColorWhite));
+        graphics_context_set_stroke_color(ctx, COLOR_FALLBACK(GColorBlueMoon,GColorWhite));
+        gpath_draw_outline(ctx, s_triangle);
+    }
+    
+    graphics_context_set_fill_color(ctx, GColorWhite);
+    for (i = 0; i < NUM_CLOCK_TICKS_WHITE; ++i) {
+        gpath_move_to(s_tick_paths[i], GPoint(x_offset, y_offset));
+        gpath_draw_filled(ctx, s_tick_paths[i]);
+    }
+    
+    graphics_context_set_fill_color(ctx, COLOR_FALLBACK(GColorRed,GColorWhite));
+    for (; i < NUM_CLOCK_TICKS_RED; ++i) {
+        gpath_move_to(s_tick_paths[i], GPoint(x_offset, y_offset));
+        gpath_draw_filled(ctx, s_tick_paths[i]);
+    }
 }
 
 static void hands_update_proc(Layer *layer, GContext *ctx) {
@@ -203,6 +205,7 @@ static void window_load(Window *window) {
     Layer *window_layer = window_get_root_layer(window);
     GRect bounds = layer_get_bounds(window_layer);
 
+
     s_simple_bg_layer = layer_create(bounds);
     layer_set_update_proc(s_simple_bg_layer, bg_update_proc);
     layer_add_child(window_layer, s_simple_bg_layer);
@@ -258,13 +261,13 @@ static void window_load(Window *window) {
     layer_set_update_proc(s_hands_layer, hands_update_proc);
     layer_add_child(window_layer, s_hands_layer);
     
-    APP_LOG (APP_LOG_LEVEL_DEBUG,"Read : year - %d, month - %d, - day %d, seconds %d, format %d, triangle %d",(int)global_config.year, global_config.month, global_config.day, global_config.showseconds, (int)global_config.countformat, global_config.showtriangle);
-    
+ 
     // Show the correct state of the BT connection from the start
     bluetooth_callback(connection_service_peek_pebble_app_connection());
 }
 
 static void window_unload(Window *window) {
+
   layer_destroy(s_simple_bg_layer);
   layer_destroy(s_date_layer);
 
@@ -318,7 +321,8 @@ static void init() {
     APP_LOG (APP_LOG_LEVEL_DEBUG,"What the Fuck : year - %d, month - %d, - day %d, seconds %d, format %d, triangle %d",(int)global_config.year, global_config.month, global_config.day, global_config.showseconds, (int)global_config.countformat, global_config.showtriangle);
     
     update_counter (NULL);
-  
+
+ 
     // init hand paths
     s_minute_arrow = gpath_create(&MINUTE_HAND_POINTS);
     s_hour_arrow = gpath_create(&HOUR_HAND_POINTS);
@@ -357,8 +361,9 @@ static void init() {
 }
 
 static void deinit() {
-
-    persist_write_data (KEY_STRUCTURE,&global_config,sizeof(global_config));
+    int written;
+    written = persist_write_data (KEY_STRUCTURE,&global_config,sizeof(global_config));
+    APP_LOG (APP_LOG_LEVEL_DEBUG,"Wrote : %d, Size : %d",written,sizeof(global_config));
 
     gpath_destroy(s_minute_arrow);
     gpath_destroy(s_hour_arrow);
