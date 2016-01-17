@@ -19,20 +19,20 @@ function submitHandler() {
 function getAndStoreConfigData() {
     var $countfromDate = $('#countfromDate');
     var $showsecondsCheckBox = $('#showsecondsCheckBox');
-    var $formatSelect = $('#formatSelect');
     var $showtriangleCheckBox = $('#showtriangleCheckBox');
+    var $formatSelect = $('#formatSelect');
 
   var options = {
     countfrom: $countfromDate.val(),
     showseconds: $showsecondsCheckBox[0].checked,
-    formatSelect: $formatSelect.val(),
     showtriangle: $showtriangleCheckBox[0].checked,
+    countformat: $formatSelect.val(),
   };
 
   localStorage.countfrom = options.countfrom;
   localStorage.showseconds = options.showseconds;
   localStorage.showtriangle = options.showtriangle;
-  localStorage.formatSelect = options.formatSelect;
+  localStorage.countformat = options.countformat;
 
   console.log('Got options main.js: ' + JSON.stringify(options));
   return options;
@@ -47,8 +47,8 @@ function loadOptions() {
     if (localStorage.countfrom) {
         $countfromDate[0].value = localStorage.countfrom;
         $showsecondsCheckBox[0].checked = localStorage.showseconds === 'true';
-        $formatSelect[0].value = localStorage.formatSelect;
         $showtriangleCheckBox[0].checked = localStorage.showtriangle === 'true';
+        $formatSelect[0].value = localStorage.countformat;
     }
 }
 
