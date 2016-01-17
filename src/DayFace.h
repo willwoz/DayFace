@@ -6,6 +6,30 @@
 #define NUM_CLOCK_TICKS_WHITE 8
 #define NUM_CLOCK_TICKS_RED 13
 
+struct dayface_config {
+    uint32_t year;
+    uint8_t day;
+    uint8_t month;
+    uint8_t showseconds; /*show seconds*/
+    uint8_t format;  /*days,months,year?*/
+    uint8_t showtriangle; /* show triangle */
+} __attribute__((__packed__)) global_config;
+
+#define FMT_DAYS    0
+#define FMT_MONTHS  1
+#define FMT_YEARS   2
+
+#define KEY_COUNTFROM 0
+
+#define KEY_STRUCTURE   0
+
+#define KEY_YEAR        0
+#define KEY_DAY         1
+#define KEY_MONTH       2
+#define KEY_SHOWSECONDS 3
+#define KEY_FORMAT      4
+#define KEY_SHOWTRIANGLE 5
+
 static const struct GPathInfo ANALOG_BG_POINTS[] = {
   { 4, (GPoint []){ /*1*/
       {112, 10},

@@ -2,13 +2,6 @@
 #include "pebble.h"
 #include "PDUtils.h"
 
-
-#define KEY_COUNTFROM 0
-
-#define KEY_DAY 0
-#define KEY_MONTH 1
-#define KEY_YEAR 2
-
 static Window *s_window;
 static Layer *s_simple_bg_layer, *s_date_layer, *s_hands_layer;
 static TextLayer *s_day_label, *s_count_label, *s_battery_label, *s_bt_label;
@@ -25,11 +18,6 @@ static char s_num_buffer[4], s_day_buffer[6], s_count_buffer[10], s_date_buffer[
 
 static struct tm then;
 static time_t seconds_then;
-static int EVENT_MONTH = 11;
-static int EVENT_DAY = 8;
-static int EVENT_YEAR = 2014;
-static int EVENT_HOUR = 0;
-static int EVENT_MINUTE = 0;
 
 static void bg_update_proc(Layer *layer, GContext *ctx) {
   int i;
@@ -148,38 +136,32 @@ static void handle_second_tick(struct tm *tick_time, TimeUnits units_changed) {
 }
 
 static void inbox_received_handler(DictionaryIterator *iter, void *context) {
-  Tuple *yearfrom_t = dict_find(iter, KEY_YEAR);
-  Tuple *monthfrom_t = dict_find(iter, KEY_MONTH);
-  Tuple *dayfrom_t = dict_find(iter, KEY_DAY);
+    Tuple *yearfrom_t = dict_find(iter, KEY_YEAR);
+    Tuple *monthfrom_t = dict_find(iter, KEY_MONTH);
+    Tuple *dayfrom_t = dict_find(iter, KEY_DAY);
+    Tuple *showseconds_t = dict_find(iter, KEY_SHOWSECONDS);
+    Tuple *format_t = dict_find(iter, KEY_FORMAT);
+    Tuple *showtriangle_t = dict_find(iter, KEY_SHOWTRIANGLE);
+
   
-  int year=1,month=2,day=3;
-
-  APP_LOG (APP_LOG_LEVEL_INFO,"recieved handeler");
-  if (yearfrom_t) {
-    year = yearfrom_t->value->int32;
-    month = monthfrom_t->value->int32;
-    day = dayfrom_t->value->int32;
+    APP_LOG (APP_LOG_LEVEL_INFO,"INFO: Returned from settings");
     
-    APP_LOG (APP_LOG_LEVEL_INFO,"Write : year %d, month %d, day %d",year,month,day);
-
-    persist_write_int(KEY_DAY, day);
-    persist_write_int(KEY_MONTH, month);
-    persist_write_int(KEY_YEAR,year);
+    if (yearfrom_t) {
+        global_config.year = yearfrom_t->value->int32;
+        global_config.month = monthfrom_t->value->int32;
+        global_config.day = dayfrom_t->value->int32;
+        global_config.showseconds = showseconds_t->value->int8;
+        global_config.format = format_t->value->int32;
+        global_config.showtriangle = showtriangle_t->value->int8;
     
-    then.tm_year = year - 1900;
-    then.tm_mon = month -1;
-    then.tm_mday = day;
-    seconds_then = p_mktime(&then);
-    update_counter (NULL);
-}
-
-//  if (twenty_four_hour_format_t) {
-//    twenty_four_hour_format = twenty_four_hour_format_t->value->int8;
-
-//    persist_write_int(KEY_TWENTY_FOUR_HOUR_FORMAT, twenty_four_hour_format);
-//
-//    update_time();
-//  }
+        APP_LOG (APP_LOG_LEVEL_INFO,"Configged : year - %d, month - %d, - day %d, seconds %d, format %d, triangle %d",(int)global_config.year, global_config.month, global_config.day, global_config.showseconds, global_config.format, global_config.showtriangle);
+    
+        then.tm_year = global_config.year - 1900;
+        then.tm_mon = global_config.month -1;
+        then.tm_mday = global_config.day;
+        seconds_then = p_mktime(&then);
+        update_counter (NULL);
+    }
 }
 
 static void bluetooth_callback(bool connected) {
@@ -284,29 +266,27 @@ static void init() {
     s_num_buffer[0] = '\0';
     s_battery_buffer[0] = '\0';
   
-    // Setup conter time from presist
-    then.tm_hour = EVENT_HOUR;
-    then.tm_min = EVENT_MINUTE;
-    then.tm_sec = 0;
-
-    APP_LOG (APP_LOG_LEVEL_INFO,"Exists : %s",(persist_exists(KEY_DAY) ? "TRUE" : "FALSE"));
-  
-    if (persist_exists(KEY_DAY)) {
-        int year = persist_read_int(KEY_YEAR);
-        int month = persist_read_int(KEY_MONTH);
-        int day = persist_read_int(KEY_DAY);
+    if (persist_exists(KEY_STRUCTURE)) {
+        persist_read_data (KEY_STRUCTURE,&global_config,sizeof(global_config));
     
-        APP_LOG (APP_LOG_LEVEL_INFO,"Reading year %d, month %d, day %d",year,month,day);
-        
-        then.tm_year = year - 1900; then.tm_mon = month -1; then.tm_mday = day;
-        
-        APP_LOG (APP_LOG_LEVEL_INFO,"Current - Init: year %d, month %d, day %d",then.tm_year,then.tm_mon,then.tm_mday);
+        APP_LOG (APP_LOG_LEVEL_INFO,"Read : year - %d, month - %d, - day %d, seconds %d, format %d, triangle %d",(int)global_config.year, global_config.month, global_config.day, global_config.showseconds, global_config.format, global_config.showtriangle);
     } else {
-        then.tm_year = EVENT_YEAR - 1900;
-        then.tm_mon = EVENT_MONTH - 1;
-        then.tm_mday = EVENT_DAY;
-        APP_LOG (APP_LOG_LEVEL_INFO,"New - Init: year %d, month %d, day %d",then.tm_year,then.tm_mon,then.tm_mday);
+        global_config.year = 2014;
+        global_config.month = 11;
+        global_config.day = 8;
+        global_config.showseconds = 1;
+        global_config.format = FMT_DAYS;
+        global_config.showtriangle = 1;
+
+        APP_LOG (APP_LOG_LEVEL_INFO,"Set : year - %d, month - %d, - day %d, seconds %d, format %d, triangle %d",(int)global_config.year, global_config.month, global_config.day, global_config.showseconds, global_config.format, global_config.showtriangle);
     }
+    // Setup conter time from presist
+    then.tm_hour = 0;
+    then.tm_min = 0;
+    then.tm_sec = 0;
+    then.tm_year = global_config.year - 1900;
+    then.tm_mon = global_config.month -1;
+    then.tm_mday = global_config.day;
     seconds_then = p_mktime(&then);
   
     // init hand paths
@@ -331,8 +311,12 @@ static void init() {
     TRIANGLE_POINTS.points[2].y = bounds.size.h * .72;
     s_triangle = gpath_create(&TRIANGLE_POINTS);
 
-    tick_timer_service_subscribe(MINUTE_UNIT, handle_second_tick);
- 
+    if (global_config.showseconds == 1) {
+        tick_timer_service_subscribe(SECOND_UNIT, handle_second_tick);
+    } else {
+        tick_timer_service_subscribe(MINUTE_UNIT, handle_second_tick);
+    }
+    
     // Register for Bluetooth connection updates
     connection_service_subscribe((ConnectionHandlers) {
         .pebble_app_connection_handler = bluetooth_callback
@@ -343,16 +327,19 @@ static void init() {
 }
 
 static void deinit() {
-  gpath_destroy(s_minute_arrow);
-  gpath_destroy(s_hour_arrow);
 
-  for (int i = 0; i < NUM_CLOCK_TICKS; ++i) {
-    gpath_destroy(s_tick_paths[i]);
-  }
+    persist_write_data (KEY_STRUCTURE,&global_config,sizeof(global_config));
 
-  gpath_destroy(s_triangle);
-  tick_timer_service_unsubscribe();
-  window_destroy(s_window);
+    gpath_destroy(s_minute_arrow);
+    gpath_destroy(s_hour_arrow);
+
+    for (int i = 0; i < NUM_CLOCK_TICKS; ++i) {
+        gpath_destroy(s_tick_paths[i]);
+    }
+
+    gpath_destroy(s_triangle);
+    tick_timer_service_unsubscribe();
+    window_destroy(s_window);
 }
 
 int main() {

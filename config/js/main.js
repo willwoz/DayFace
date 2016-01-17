@@ -3,6 +3,7 @@
   submitHandler();
 })();
 
+var formatStrings = ["1 - Days", "2 - Months", "3 - Years", "4 - Zen"];
 
 function submitHandler() {
   var $submitButton = $('#submitButton');
@@ -16,13 +17,22 @@ function submitHandler() {
 }
 
 function getAndStoreConfigData() {
-  var $countfromDate = $('#countfromDate');
+    var $countfromDate = $('#countfromDate');
+    var $showsecondsCheckBox = $('#showsecondsCheckBox');
+    var $showtriangleCheckBox = $('#showtriangleCheckBox');
+    var $formatSelect = $('#formatSelect');
 
   var options = {
-    countfrom: $countfromDate.val()
+    countfrom: $countfromDate.val(),
+    showseconds: $showsecondsCheckBox[0].checked,
+    showtriangle: $showtriangleCheckBox[0].checked,
+    formatSelect: $formatSelect.val(),
   };
 
   localStorage.countfrom = options.countfrom;
+  localStorage.showseconds = options.showseconds;
+  localStorage.showtriangle = options.showtriangle;
+  localStorage.formatSelect = options.formatSelect;
 
   console.log('Got options: ' + JSON.stringify(options));
   return options;
@@ -30,10 +40,15 @@ function getAndStoreConfigData() {
 
 function loadOptions() {
     var $countfromDate = $('#countfromDate');
-
+    var $showsecondsCheckBox = $('#showsecondsCheckBox');
+    var $showtriangleCheckBox = $('#showtriangleCheckBox');
+    var $formatSelect = $('#formatSelect');
 
     if (localStorage.countfrom) {
         $countfromDate[0].value = localStorage.countfrom;
+        $showsecondsCheckBox[0].checked = localStorage.showseconds === 'true';
+        $showtriangleCheckBox[0].checked = localStorage.showtriangle === 'true';
+        $formatSelect[0].value = localStorage.formatSelect;
     }
 }
 
