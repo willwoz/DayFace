@@ -86,8 +86,10 @@ static void hands_update_proc(Layer *layer, GContext *ctx) {
 static void update_counter (struct tm *now_secs) {
     // Countdown update
     struct tm *now;
+    int days_now, days_counter;
+    
     time_t seconds_now;
-    int difference;
+    int difference = 1;
     
     if (now_secs == NULL) {
         time_t t = time(NULL);
@@ -96,18 +98,30 @@ static void update_counter (struct tm *now_secs) {
         now = now_secs;
     }
     
-    seconds_now = p_mktime(now);
-
-    // Determine the time difference
-    if (seconds_now>seconds_then) {
-        difference = day_number(now->tm_year+1900,now->tm_mon+1,now->tm_mday) - day_number(then.tm_year+1900,then.tm_mon+1,then.tm_mday);
-        //differene = ((((seconds_now - seconds_then) / 60) / 60) / 24);
-    } else {
-        //difference = ((1+(((seconds_then - seconds_now) / 60) / 60) / 24));
-        difference = day_number(then.tm_year,then.tm_mon,then.tm_mday) - day_number(now->tm_year,now->tm_mon,now->tm_mday);
-                difference++;
+    days_now = day_number(now->tm_year+1900,now->tm_mon+1,now->tm_mday);
+    days_counter = day_number(then.tm_year+1900,then.tm_mon+1,then.tm_mday);
+  
+    switch (global_config.countformat) {
+        case FMT_DAYS :
+            difference = days_now - days_counter;
+            if (difference < 0) {
+                difference = -(difference);
+            }
+            snprintf (s_count_buffer,sizeof(s_count_buffer),"%d Days",difference);
+            break;
+        case FMT_MONTHS :
+            snprintf (s_count_buffer,sizeof(s_count_buffer),"%d Months",difference);
+            break;
+        case FMT_YEARS :
+            snprintf (s_count_buffer,sizeof(s_count_buffer),"%d Years",difference);
+            break;
+        case FMT_ZEN :
+            snprintf (s_count_buffer,sizeof(s_count_buffer),"%d Zen",difference);
+            break;
+        default:
+            snprintf (s_count_buffer,sizeof(s_count_buffer),"%d Broken",difference);
+            
     }
-    snprintf (s_count_buffer,sizeof(s_count_buffer),"%d Days",difference);
 //            break;
 //        case FMT_MONTHS:
 //            if (seconds_now>seconds_then) {
@@ -186,7 +200,7 @@ static void inbox_received_handler(DictionaryIterator *iter, void *context) {
         then.tm_year = global_config.year - 1900;
         then.tm_mon = global_config.month -1;
         then.tm_mday = global_config.day;
-        seconds_then = p_mktime(&then);
+
         update_counter (NULL);
     }
   
@@ -343,10 +357,7 @@ static void init() {
     then.tm_year = global_config.year - 1900;
     then.tm_mon = global_config.month -1;
     then.tm_mday = global_config.day;
-    seconds_then = p_mktime(&then);
-    
-    APP_LOG (APP_LOG_LEVEL_DEBUG,"What the Fuck : year - %d, month - %d, - day %d, seconds %d, format %d, triangle %d",(int)global_config.year, global_config.month, global_config.day, global_config.showseconds, (int)global_config.countformat, global_config.showtriangle);
-    
+ 
     update_counter (NULL);
 
  

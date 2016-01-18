@@ -15,9 +15,10 @@ struct dayface_config {
     uint32_t countformat;  /*days,months,year?*/
 } __attribute__((__packed__)) global_config;
 
-#define FMT_DAYS    0
-#define FMT_MONTHS  1
-#define FMT_YEARS   2
+#define FMT_DAYS    1
+#define FMT_MONTHS  2
+#define FMT_YEARS   3
+#define FMT_ZEN     4
 
 #define KEY_COUNTFROM 0
 
