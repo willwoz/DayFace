@@ -109,44 +109,16 @@ static void update_counter (struct tm *now_secs) {
             }
             snprintf (s_count_buffer,sizeof(s_count_buffer),"%d Days",difference);
             break;
-        case FMT_MONTHS :
-            snprintf (s_count_buffer,sizeof(s_count_buffer),"%d Months",difference);
-            break;
-        case FMT_YEARS :
-            snprintf (s_count_buffer,sizeof(s_count_buffer),"%d Years",difference);
-            break;
         case FMT_ZEN :
-            snprintf (s_count_buffer,sizeof(s_count_buffer),"%d Zen",difference);
+            snprintf (s_count_buffer,sizeof(s_count_buffer),"%dh ,%dm",now->tm_hour,now->tm_min);
+            break;
+        case FMT_BLANK :
+            s_count_buffer[0] = '\0';
             break;
         default:
             snprintf (s_count_buffer,sizeof(s_count_buffer),"%d Broken",difference);
             
     }
-//            break;
-//        case FMT_MONTHS:
-//            if (seconds_now>seconds_then) {
-//                difference = (now->tm_year - then.tm_year) * 12;
-//                if (then.tm_mon < now->tm_mon) {
-//                    difference += (then.tm_mon - now->tm_mon);
-//                } else {
-//                    difference += (now->tm_mon - then.tm_mon);
- //                   if (then.tm_mday >= now->tm_mday) {
-  //                      difference++;
-   //                 }
-//                }
-//            } else {
-//                difference = (then.tm_year - now->tm_year) * 12;
-//               if (then.tm_mon <= now->tm_mon) {
-//                    difference += (then.tm_mon - now->tm_mon);
-//                } else {
-//                    difference += (now->tm_mon - then.tm_mon);
-//                }
-//                if (then.tm_mday >= now->tm_mday) {
-//                    difference++;
-//                }
-//            }
-//            snprintf (s_count_buffer,sizeof(s_count_buffer),"%d Months",difference);
-//    }
     text_layer_set_text(s_count_label, s_count_buffer);
 }
     
@@ -333,7 +305,7 @@ static void init() {
 
     s_day_buffer[0] = '\0';
     s_num_buffer[0] = '\0';
-    s_num_buffer[0] = '\0';
+    s_count_buffer[0] = '\0';
     s_battery_buffer[0] = '\0';
   
     if (persist_exists(KEY_STRUCTURE)) {
@@ -395,7 +367,8 @@ static void init() {
     });
 
     app_message_register_inbox_received(inbox_received_handler);
-    app_message_open(app_message_inbox_size_maximum(), app_message_outbox_size_maximum());
+//    app_message_open(app_message_inbox_size_maximum(), app_message_outbox_size_maximum());
+    app_message_open(64,64);
 }
 
 static void deinit() {

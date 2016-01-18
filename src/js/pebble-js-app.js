@@ -4,7 +4,7 @@ Pebble.addEventListener('ready', function() {
 });
 
 Pebble.addEventListener('showConfiguration', function() {
-  var url = 'https://dbbdbaac.ngrok.io';
+  var url = 'https://willwoz.github.io/DayFace/';
 
   console.log('Showing configuration page: ' + url);
 
