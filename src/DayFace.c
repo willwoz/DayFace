@@ -3,7 +3,7 @@
 #include "PDUtils.h"
 
 static Window *s_window;
-static Layer *s_simple_bg_layer, *s_date_layer, *s_hands_layer;
+static Layer *s_simple_bg_layer, *s_date_layer, *s_hands_layer, *s_count_layer;
 static TextLayer *s_day_label, *s_count_label, *s_battery_label, *s_bt_label;
 
 static BitmapLayer *s_background_layer, *s_bt_icon_layer;
@@ -14,7 +14,8 @@ static GPath *s_tick_paths[NUM_CLOCK_TICKS];
 static GPath *s_minute_arrow, *s_hour_arrow;
 static GPath *s_triangle;
 
-static char s_num_buffer[4], s_day_buffer[6], s_count_buffer[10], s_date_buffer[10],s_battery_buffer[4],s_bt_buffer[1];
+static char s_num_buffer[4], s_day_buffer[6], s_count_buffer[14],
+                s_date_buffer[10],s_battery_buffer[5],s_bt_buffer[1];
 
 static struct tm then;
 static time_t seconds_then;
@@ -62,7 +63,7 @@ static void hands_update_proc(Layer *layer, GContext *ctx) {
 
   // second hand
     if (global_config.showseconds == 1) {
-        graphics_context_set_stroke_color(ctx, GColorRed);
+        graphics_context_set_stroke_color(ctx, COLOR_FALLBACK(GColorRed,GColorWhite));
         graphics_draw_line(ctx, second_hand, center);
     }
 
@@ -110,7 +111,7 @@ static void update_counter (struct tm *now_secs) {
             snprintf (s_count_buffer,sizeof(s_count_buffer),"%d Days",difference);
             break;
         case FMT_ZEN :
-            snprintf (s_count_buffer,sizeof(s_count_buffer),"%dh ,%dm",now->tm_hour,now->tm_min);
+            snprintf (s_count_buffer,sizeof(s_count_buffer),"%d hrs,%d mins",now->tm_hour,now->tm_min);
             break;
         case FMT_BLANK :
             s_count_buffer[0] = '\0';
@@ -120,6 +121,7 @@ static void update_counter (struct tm *now_secs) {
             
     }
     text_layer_set_text(s_count_label, s_count_buffer);
+    layer_set_hidden(text_layer_get_layer(s_count_label),(global_config.countformat == FMT_BLANK));
 }
     
 static void date_update_proc(Layer *layer, GContext *ctx) {
@@ -161,10 +163,10 @@ static void inbox_received_handler(DictionaryIterator *iter, void *context) {
     Tuple *format_t = dict_find(iter, KEY_FORMAT);
 
   
-    APP_LOG (APP_LOG_LEVEL_DEBUG,"INFO: Returned from settings");
+//    APP_LOG (APP_LOG_LEVEL_DEBUG,"INFO: Returned from settings");
     
     if (yearfrom_t) {
-        APP_LOG (APP_LOG_LEVEL_DEBUG,"INFO: Date Changed");
+//      APP_LOG (APP_LOG_LEVEL_DEBUG,"INFO: Date Changed");
         global_config.year = yearfrom_t->value->int32;
         global_config.month = monthfrom_t->value->int8;
         global_config.day = dayfrom_t->value->int8;
@@ -177,7 +179,7 @@ static void inbox_received_handler(DictionaryIterator *iter, void *context) {
     }
   
     if (showseconds_t) {
-        APP_LOG (APP_LOG_LEVEL_DEBUG,"INFO: Seconds CHanged");
+//        APP_LOG (APP_LOG_LEVEL_DEBUG,"INFO: Seconds CHanged");
         global_config.showseconds = showseconds_t->value->int8;
         tick_timer_service_unsubscribe();
         if (global_config.showseconds == 1) {
@@ -190,16 +192,16 @@ static void inbox_received_handler(DictionaryIterator *iter, void *context) {
     }
   
     if (format_t) {
-        APP_LOG (APP_LOG_LEVEL_DEBUG,"INFO: Format changed");
+//        APP_LOG (APP_LOG_LEVEL_DEBUG,"INFO: Format changed");
         global_config.countformat = format_t->value->int32;
     }
     
     if (showtriangle_t) {
-        APP_LOG (APP_LOG_LEVEL_DEBUG,"INFO: Triangle Changed");
+//        APP_LOG (APP_LOG_LEVEL_DEBUG,"INFO: Triangle Changed");
         global_config.showtriangle = showtriangle_t->value->int8;
     }
   
-    APP_LOG (APP_LOG_LEVEL_DEBUG,"Configged : year - %d, month - %d, - day %d, seconds %d, format %d, triangle %d",(int)global_config.year, global_config.month, global_config.day, global_config.showseconds, (int)global_config.countformat, global_config.showtriangle);
+//    APP_LOG (APP_LOG_LEVEL_DEBUG,"Configged : year - %d, month - %d, - day %d, seconds %d, format %d, triangle %d",(int)global_config.year, global_config.month, global_config.day, global_config.showseconds, (int)global_config.countformat, global_config.showtriangle);
     
 }
 
@@ -217,7 +219,7 @@ static void bluetooth_callback(bool connected) {
 static void window_load(Window *window) {
     Layer *window_layer = window_get_root_layer(window);
     GRect bounds = layer_get_bounds(window_layer);
-
+    GPoint centre = grect_center_point(&bounds);
 
     s_simple_bg_layer = layer_create(bounds);
     layer_set_update_proc(s_simple_bg_layer, bg_update_proc);
@@ -227,9 +229,11 @@ static void window_load(Window *window) {
     layer_set_update_proc(s_date_layer, date_update_proc);
     layer_add_child(window_layer, s_date_layer);
 
-    s_day_label = text_layer_create(PBL_IF_ROUND_ELSE(
-        GRect(48, 40, 90, 20),
-        GRect(31, 40, 90, 20)));
+//    s_day_label = text_layer_create(PBL_IF_ROUND_ELSE(
+//       GRect(38, 40, 110, 20),
+//       GRect(21, 40, 110, 20)));
+    s_day_label = text_layer_create(GRect(centre.x-50, 40, 101, 20));
+  
     text_layer_set_text_alignment(s_day_label,GTextAlignmentCenter);
     text_layer_set_text(s_day_label, s_day_buffer);
     text_layer_set_background_color(s_day_label, GColorBlack);
@@ -237,9 +241,9 @@ static void window_load(Window *window) {
     text_layer_set_font(s_day_label, fonts_get_system_font(FONT_KEY_GOTHIC_18));
     layer_add_child(s_date_layer, text_layer_get_layer(s_day_label));
 
-    s_count_label = text_layer_create(PBL_IF_ROUND_ELSE(
-        GRect(48, 114, 90, 20),
-        GRect(31, 114, 90, 20)));
+//    s_count_layer = layer_create(bounds);
+//    layer_add_child(window_layer, s_count_layer);
+    s_count_label = text_layer_create(GRect(centre.x-50, (bounds.size.h * .72-10), 101, 21));
     text_layer_set_text_alignment(s_count_label,GTextAlignmentCenter);
     text_layer_set_text(s_count_label, s_count_buffer);
     text_layer_set_background_color(s_count_label, GColorBlack);
@@ -247,9 +251,7 @@ static void window_load(Window *window) {
     text_layer_set_font(s_count_label, fonts_get_system_font(FONT_KEY_GOTHIC_18));
     layer_add_child(s_date_layer, text_layer_get_layer(s_count_label));
     
-    s_battery_label = text_layer_create(PBL_IF_ROUND_ELSE(
-        GRect(28, 80, 36, 20),
-        GRect(11, 80, 36, 20)));
+    s_battery_label = text_layer_create(GRect(((bounds.size.w*5)/18)-30, centre.y-10, 61, 21));
     text_layer_set_text_alignment(s_battery_label,GTextAlignmentCenter);
     text_layer_set_text(s_battery_label, s_battery_buffer);
     text_layer_set_background_color(s_battery_label, GColorBlack);
@@ -261,9 +263,7 @@ static void window_load(Window *window) {
     s_bt_icon_bitmap = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_BT_ICON_GLASS);
 
     // Create the BitmapLayer to display the GBitmap
-    s_bt_icon_layer = bitmap_layer_create(PBL_IF_ROUND_ELSE(
-        GRect(125, 80, 20, 20),
-        GRect(108, 80, 20, 20)));
+    s_bt_icon_layer = bitmap_layer_create(GRect(((bounds.size.w*13)/18)-10, centre.y-10, 21, 21));
     bitmap_layer_set_bitmap(s_bt_icon_layer, s_bt_icon_bitmap);
     layer_add_child(window_layer, bitmap_layer_get_layer(s_bt_icon_layer));
 
@@ -311,7 +311,7 @@ static void init() {
     if (persist_exists(KEY_STRUCTURE)) {
         persist_read_data (KEY_STRUCTURE,&global_config,sizeof(global_config));
     
-        APP_LOG (APP_LOG_LEVEL_DEBUG,"Read : year - %d, month - %d, - day %d, seconds %d, format %d, triangle %d",(int)global_config.year, global_config.month, global_config.day, global_config.showseconds, (int)global_config.countformat, global_config.showtriangle);
+//        APP_LOG (APP_LOG_LEVEL_DEBUG,"Read : year - %d, month - %d, - day %d, seconds %d, format %d, triangle %d",(int)global_config.year, global_config.month, global_config.day, global_config.showseconds, (int)global_config.countformat, global_config.showtriangle);
     } else {
         global_config.year = 2014;
         global_config.month = 11;
@@ -320,7 +320,7 @@ static void init() {
         global_config.countformat = FMT_DAYS;
         global_config.showtriangle = 1;
 
-        APP_LOG (APP_LOG_LEVEL_DEBUG,"Set : year - %d, month - %d, - day %d, seconds %d, format %d, triangle %d",(int)global_config.year, global_config.month, global_config.day, global_config.showseconds, (int)global_config.countformat, global_config.showtriangle);
+//        APP_LOG (APP_LOG_LEVEL_DEBUG,"Set : year - %d, month - %d, - day %d, seconds %d, format %d, triangle %d",(int)global_config.year, global_config.month, global_config.day, global_config.showseconds, (int)global_config.countformat, global_config.showtriangle);
     }
     // Setup conter time from presist
     then.tm_hour = 0;
@@ -372,9 +372,8 @@ static void init() {
 }
 
 static void deinit() {
-    int written;
-    written = persist_write_data (KEY_STRUCTURE,&global_config,sizeof(global_config));
-    APP_LOG (APP_LOG_LEVEL_DEBUG,"Wrote : %d, Size : %d",written,sizeof(global_config));
+    persist_write_data (KEY_STRUCTURE,&global_config,sizeof(global_config));
+//    APP_LOG (APP_LOG_LEVEL_DEBUG,"Wrote : %d, Size : %d",written,sizeof(global_config));
 
     gpath_destroy(s_minute_arrow);
     gpath_destroy(s_hour_arrow);
