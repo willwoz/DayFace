@@ -131,13 +131,23 @@ static const struct GPathInfo ANALOG_BG_POINTS[] = {
 };
 
 static const GPathInfo TRIANGLE_POINTS = {
-  3, (GPoint []) {
-    { 90, 10 },
-    { 20, 130 },
-    { 160, 130 }
-  }
+    3, (GPoint []) {
+        { 90, 10 },
+        { 20, 130 },
+        { 160, 130 }
+    }
 };
 
+static const GPathInfo BT_POINTS = {
+    6, (GPoint []) {
+        { 1, 5 },
+        { 20, 15 },
+        { 10, 20 },
+        { 10,1 },
+        { 20, 5},
+        { 1, 15}
+    }
+};
 
 static const GPathInfo MINUTE_HAND_POINTS = {
   4, (GPoint []) {
