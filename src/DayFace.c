@@ -135,8 +135,6 @@ static void date_update_proc(Layer *layer, GContext *ctx) {
  
 
     strftime(s_date_buffer, sizeof(s_date_buffer), "%a %d", now);
-//    strftime(s_num_buffer, sizeof(s_num_buffer), "%d", now);
-//    snprintf(s_date_buffer,sizeof(s_date_buffer),"%s %s",s_day_buffer,s_num_buffer);
     text_layer_set_text(s_day_label, s_date_buffer);
   
   update_counter(now);
@@ -215,11 +213,11 @@ static void inbox_received_handler(DictionaryIterator *iter, void *context) {
         global_config.battery = battery_t->value->int8;
         layer_set_hidden(text_layer_get_layer(s_battery_label),(global_config.battery == 0));
     }
-    if (bluetooth_t) {
+//    if (bluetooth_t) {
 //        APP_LOG (APP_LOG_LEVEL_DEBUG,"INFO: Triangle Changed");
-        global_config.bluetooth = bluetooth_t->value->int8;
-        layer_set_hidden(bitmap_layer_get_layer(s_bt_icon_layer),(global_config.bluetooth == 0));
-    }
+//        global_config.bluetooth = bluetooth_t->value->int8;
+//        layer_set_hidden(bitmap_layer_get_layer(s_bt_icon_layer),(global_config.bluetooth == 0));
+//    }
   
     APP_LOG (APP_LOG_LEVEL_DEBUG,"Configged : year - %d, month - %d, - day %d", (int)global_config.year, global_config.month, global_config.day);
     APP_LOG (APP_LOG_LEVEL_DEBUG, "Seconds %d, format %d, triangle %d, battery %d, bluetooth %d, black %d",
@@ -233,8 +231,7 @@ static void inbox_received_handler(DictionaryIterator *iter, void *context) {
 
 static void bluetooth_callback(bool connected) {
   // Show icon if disconnected
-  if (global_config.bluetooth == 1)
-      layer_set_hidden(bitmap_layer_get_layer(s_bt_icon_layer), connected);
+  layer_set_hidden(bitmap_layer_get_layer(s_bt_icon_layer), connected);
 
   if(!connected) {
     // Issue a vibrating alert
@@ -256,9 +253,6 @@ static void window_load(Window *window) {
     layer_set_update_proc(s_date_layer, date_update_proc);
     layer_add_child(window_layer, s_date_layer);
 
-//    s_day_label = text_layer_create(PBL_IF_ROUND_ELSE(
-//       GRect(38, 40, 110, 20),
-//       GRect(21, 40, 110, 20)));
     s_day_label = text_layer_create(GRect(centre.x-50, 40, 101, 20));
   
     text_layer_set_text_alignment(s_day_label,GTextAlignmentCenter);
@@ -268,8 +262,6 @@ static void window_load(Window *window) {
     text_layer_set_font(s_day_label, fonts_get_system_font(FONT_KEY_GOTHIC_18));
     layer_add_child(s_date_layer, text_layer_get_layer(s_day_label));
 
-//    s_count_layer = layer_create(bounds);
-//    layer_add_child(window_layer, s_count_layer);
     s_count_label = text_layer_create(GRect(centre.x-50, ((bounds.size.h * 13 )/ 18)-10, 101, 21));
     text_layer_set_text_alignment(s_count_label,GTextAlignmentCenter);
     text_layer_set_text(s_count_label, s_count_buffer);
@@ -293,20 +285,17 @@ static void window_load(Window *window) {
     s_bt_icon_layer = bitmap_layer_create(GRect(((bounds.size.w*13)/18)-10, centre.y-10, 21, 21));
     bitmap_layer_set_bitmap(s_bt_icon_layer, s_bt_icon_bitmap);
     layer_add_child(window_layer, bitmap_layer_get_layer(s_bt_icon_layer));
-    if (global_config.bluetooth == 1)
-        layer_set_hidden(bitmap_layer_get_layer(s_bt_icon_layer), 1);
     
     s_hands_layer = layer_create(bounds);
     
-//    bluetooth_callback(connection_service_peek_pebble_app_connection());
+    bluetooth_callback(connection_service_peek_pebble_app_connection());
 
     layer_set_update_proc(s_hands_layer, hands_update_proc);
     layer_add_child(window_layer, s_hands_layer);
     
  
     // Show the correct state of the BT connection from the start
-    if (global_config.bluetooth == 1)
-        bluetooth_callback(connection_service_peek_pebble_app_connection());
+    bluetooth_callback(connection_service_peek_pebble_app_connection());
 }
 
 static void window_unload(Window *window) {
@@ -322,7 +311,7 @@ static void window_unload(Window *window) {
   bitmap_layer_destroy(s_bt_icon_layer);
 
   layer_destroy(s_hands_layer);
- 
+
 }
 
 static void init() {
