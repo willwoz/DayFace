@@ -1,13 +1,13 @@
 #include "DayFace.h"
 #include "pebble.h"
-#include "PDUtils.h"
+// #include "PDUtils.h"
 
 static Window *s_window;
-static Layer *s_simple_bg_layer, *s_date_layer, *s_hands_layer, *s_count_layer;
-static TextLayer *s_day_label, *s_count_label, *s_battery_label, *s_bt_label;
+static Layer *s_simple_bg_layer, *s_date_layer, *s_hands_layer;
+static TextLayer *s_day_label, *s_count_label, *s_battery_label;
 
-static BitmapLayer *s_background_layer, *s_bt_icon_layer;
-static GBitmap *s_background_bitmap, *s_bt_icon_bitmap;
+static BitmapLayer *s_bt_icon_layer;
+static GBitmap  *s_bt_icon_bitmap;
 
 
 static GPath *s_tick_paths[NUM_CLOCK_TICKS];
@@ -15,10 +15,9 @@ static GPath *s_minute_arrow, *s_hour_arrow;
 static GPath *s_triangle;
 
 static char s_num_buffer[4], s_day_buffer[6], s_count_buffer[14],
-                s_date_buffer[10],s_battery_buffer[5],s_bt_buffer[1];
+                s_date_buffer[10],s_battery_buffer[5];
 
 static struct tm then;
-static time_t seconds_then;
 
 static void bg_update_proc(Layer *layer, GContext *ctx) {
     int i;
@@ -84,12 +83,18 @@ static void hands_update_proc(Layer *layer, GContext *ctx) {
     graphics_fill_rect(ctx, GRect(bounds.size.w / 2 - 1, bounds.size.h / 2 - 1, 3, 3), 0, GCornerNone);
 }
 
+static int day_number (int y,int m,int d) {
+    m = (m + 9) % 12;
+    y = y - m/10;
+    return (365*y + y/4 - y/100 + y/400 + (m*306 + 5)/10 + ( d - 1 ));
+}
+
 static void update_counter (struct tm *now_secs) {
     // Countdown update
     struct tm *now;
     int days_now, days_counter;
     
-    time_t seconds_now;
+//    time_t seconds_now;
     int difference = 1;
     
     if (now_secs == NULL) {
@@ -164,9 +169,7 @@ static void inbox_received_handler(DictionaryIterator *iter, void *context) {
     Tuple *black_t = dict_find(iter, KEY_BLACK);
     Tuple *battery_t = dict_find(iter, KEY_BATTERY);
     Tuple *bluetooth_t = dict_find(iter, KEY_BLUETOOTH);
-    
-
-  
+ 
 //    APP_LOG (APP_LOG_LEVEL_DEBUG,"INFO: Returned from settings");
     
     if (yearfrom_t) {
@@ -190,8 +193,6 @@ static void inbox_received_handler(DictionaryIterator *iter, void *context) {
         } else {
             tick_timer_service_subscribe(MINUTE_UNIT, handle_second_tick);
         }
-
-
     }
   
     if (format_t) {
@@ -407,8 +408,8 @@ static void init() {
     });
 
     app_message_register_inbox_received(inbox_received_handler);
-//    app_message_open(app_message_inbox_size_maximum(), app_message_outbox_size_maximum());
-    app_message_open(64,64);
+    app_message_open(app_message_inbox_size_maximum(), app_message_outbox_size_maximum());
+//    app_message_open(64,64);
 }
 
 static void deinit() {
