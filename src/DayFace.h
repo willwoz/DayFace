@@ -13,7 +13,7 @@ struct dayface_config {
     uint8_t month;
     uint8_t showseconds; /*show seconds*/
     uint8_t showtriangle; /* show triangle */
-    uint8_t black; /*blac kor white*/
+    uint8_t white; /*blac kor white*/
     uint8_t battery; /*show battery*/
     uint8_t bluetooth; /*show bluetooth*/
 } __attribute__((__packed__)) global_config;

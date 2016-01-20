@@ -25,7 +25,7 @@ Pebble.addEventListener('webviewclosed', function(e) {
       showseconds: configData.showseconds,
       showtriangle: configData.showtriangle,
       countformat: parseInt(configData.countformat),
-      black: configData.black,
+      white: configData.white,
       battery: configData.battery,
       bluetooth: configData.bluetooth,
     }, function() {

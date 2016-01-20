@@ -187,7 +187,7 @@ static void inbox_received_handler(DictionaryIterator *iter, void *context) {
     Tuple *showseconds_t = dict_find(iter, KEY_SHOWSECONDS);
     Tuple *showtriangle_t = dict_find(iter, KEY_SHOWTRIANGLE);
     Tuple *format_t = dict_find(iter, KEY_FORMAT);
-    Tuple *black_t = dict_find(iter, KEY_BLACK);
+    Tuple *white_t = dict_find(iter, KEY_BLACK);
     Tuple *battery_t = dict_find(iter, KEY_BATTERY);
     Tuple *bluetooth_t = dict_find(iter, KEY_BLUETOOTH);
  
@@ -226,15 +226,15 @@ static void inbox_received_handler(DictionaryIterator *iter, void *context) {
         global_config.showtriangle = showtriangle_t->value->int8;
     }
     
-    if (black_t) {
+    if (white_t) {
 //        APP_LOG (APP_LOG_LEVEL_DEBUG,"INFO: Black Changed");
-        global_config.black = black_t->value->int8;
-        if (global_config.black == 0) {
-            /* black background */
+        global_config.white = white_t->value->int8;
+        if (global_config.white == 0) {
+            /* white background */
             s_background_color = GColorBlack;
             s_forground_color = GColorWhite;
         } else {
-            /* black background */
+            /* white background */
             s_background_color = GColorWhite;
             s_forground_color = GColorBlack;
         }
@@ -261,13 +261,13 @@ static void inbox_received_handler(DictionaryIterator *iter, void *context) {
 //    }
   
 /*    APP_LOG (APP_LOG_LEVEL_DEBUG,"Configged : year - %d, month - %d, - day %d", (int)global_config.year, global_config.month, global_config.day);
-    APP_LOG (APP_LOG_LEVEL_DEBUG, "Seconds %d, format %d, triangle %d, battery %d, bluetooth %d, black %d",
+    APP_LOG (APP_LOG_LEVEL_DEBUG, "Seconds %d, format %d, triangle %d, battery %d, bluetooth %d, white %d",
              global_config.showseconds,
              (int)global_config.countformat,
              global_config.showtriangle,
              global_config.battery,
              global_config.bluetooth,
-             global_config.black);
+             global_config.white);
 */
 }
 
@@ -277,12 +277,12 @@ static void window_load(Window *window) {
     GRect bounds = layer_get_bounds(window_layer);
     GPoint centre = grect_center_point(&bounds);
 
-    if (global_config.black == 0) {
-        /* black background */
+    if (global_config.white == 0) {
+        /* white background */
         s_background_color = GColorBlack;
         s_forground_color = GColorWhite;
     } else {
-         /* black background */
+         /* white background */
         s_background_color = GColorWhite;
         s_forground_color = GColorBlack;
     }
@@ -371,13 +371,13 @@ static void init() {
         persist_read_data (KEY_STRUCTURE,&global_config,sizeof(global_config));
 
 /*    APP_LOG (APP_LOG_LEVEL_DEBUG,"Read : year - %d, month - %d, - day %d", (int)global_config.year, global_config.month, global_config.day);
-    APP_LOG (APP_LOG_LEVEL_DEBUG, "Seconds %d, format %d, triangle %d, battery %d, bluetooth %d, black %d",
+    APP_LOG (APP_LOG_LEVEL_DEBUG, "Seconds %d, format %d, triangle %d, battery %d, bluetooth %d, white %d",
              global_config.showseconds,
              (int)global_config.countformat,
              global_config.showtriangle,
              global_config.battery,
              global_config.bluetooth,
-             global_config.black);
+             global_config.white);
   */
     } else {
         global_config.year = 2014;
@@ -388,16 +388,16 @@ static void init() {
         global_config.showtriangle = 1;
         global_config.battery = 1;
         global_config.bluetooth = 1;
-        global_config.black = 0;
+        global_config.white = 0;
         
     /*APP_LOG (APP_LOG_LEVEL_DEBUG,"Set : year - %d, month - %d, - day %d", (int)global_config.year, global_config.month, global_config.day);
-    APP_LOG (APP_LOG_LEVEL_DEBUG, "Seconds %d, format %d, triangle %d, battery %d, bluetooth %d, black %d",
+    APP_LOG (APP_LOG_LEVEL_DEBUG, "Seconds %d, format %d, triangle %d, battery %d, bluetooth %d, white %d",
              global_config.showseconds,
              (int)global_config.countformat,
              global_config.showtriangle,
              global_config.battery,
              global_config.bluetooth,
-             global_config.black);
+             global_config.white);
     */
     }
     // Setup conter time from presist
