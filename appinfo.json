@@ -1,11 +1,14 @@
 {
     "appKeys": {
-        "countformat": 5,
+        "yearfrom": 0,
         "dayfrom": 1,
         "monthfrom": 2,
         "showseconds": 3,
         "showtriangle": 4,
-        "yearfrom": 0
+        "countformat": 5,
+        "black": 6,
+        "battery": 7,
+        "bluetooth": 8
     },
     "capabilities": [
         "configurable"

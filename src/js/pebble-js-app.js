@@ -24,7 +24,10 @@ Pebble.addEventListener('webviewclosed', function(e) {
       monthfrom: parseInt(datebits[1]),
       showseconds: configData.showseconds,
       showtriangle: configData.showtriangle,
-      countformat: parseInt(configData.countformat)
+      countformat: parseInt(configData.countformat),
+      black: configData.black,
+      battery: configData.battery,
+      bluetooth: configData.bluetooth,
     }, function() {
       console.log('Send successful!');
     }, function() {

@@ -161,6 +161,10 @@ static void inbox_received_handler(DictionaryIterator *iter, void *context) {
     Tuple *showseconds_t = dict_find(iter, KEY_SHOWSECONDS);
     Tuple *showtriangle_t = dict_find(iter, KEY_SHOWTRIANGLE);
     Tuple *format_t = dict_find(iter, KEY_FORMAT);
+    Tuple *black_t = dict_find(iter, KEY_BLACK);
+    Tuple *battery_t = dict_find(iter, KEY_BATTERY);
+    Tuple *bluetooth_t = dict_find(iter, KEY_BLUETOOTH);
+    
 
   
 //    APP_LOG (APP_LOG_LEVEL_DEBUG,"INFO: Returned from settings");
@@ -174,7 +178,6 @@ static void inbox_received_handler(DictionaryIterator *iter, void *context) {
         then.tm_year = global_config.year - 1900;
         then.tm_mon = global_config.month -1;
         then.tm_mday = global_config.day;
-
         update_counter (NULL);
     }
   
@@ -200,8 +203,28 @@ static void inbox_received_handler(DictionaryIterator *iter, void *context) {
 //        APP_LOG (APP_LOG_LEVEL_DEBUG,"INFO: Triangle Changed");
         global_config.showtriangle = showtriangle_t->value->int8;
     }
+    
+    if (black_t) {
+//        APP_LOG (APP_LOG_LEVEL_DEBUG,"INFO: Triangle Changed");
+        global_config.black = black_t->value->int8;
+    }
+    if (battery_t) {
+//        APP_LOG (APP_LOG_LEVEL_DEBUG,"INFO: Triangle Changed");
+        global_config.battery = battery_t->value->int8;
+    }
+    if (bluetooth_t) {
+//        APP_LOG (APP_LOG_LEVEL_DEBUG,"INFO: Triangle Changed");
+        global_config.bluetooth = bluetooth_t->value->int8;
+    }
   
-//    APP_LOG (APP_LOG_LEVEL_DEBUG,"Configged : year - %d, month - %d, - day %d, seconds %d, format %d, triangle %d",(int)global_config.year, global_config.month, global_config.day, global_config.showseconds, (int)global_config.countformat, global_config.showtriangle);
+    APP_LOG (APP_LOG_LEVEL_DEBUG,"Configed : year - %d, month - %d, - day %d, seconds %d, format %d, triangle %d, batter %d, bluetooth %d, black %d",
+             (int)global_config.year, global_config.month, global_config.day, global_config.showseconds,
+             (int)global_config.countformat,
+             global_config.showtriangle,
+             global_config.battery,
+             global_config.bluetooth,
+             global_config.black
+            );
     
 }
 
@@ -243,7 +266,7 @@ static void window_load(Window *window) {
 
 //    s_count_layer = layer_create(bounds);
 //    layer_add_child(window_layer, s_count_layer);
-    s_count_label = text_layer_create(GRect(centre.x-50, (bounds.size.h * .72-10), 101, 21));
+    s_count_label = text_layer_create(GRect(centre.x-50, ((bounds.size.h * 13 )/ 18)-10, 101, 21));
     text_layer_set_text_alignment(s_count_label,GTextAlignmentCenter);
     text_layer_set_text(s_count_label, s_count_buffer);
     text_layer_set_background_color(s_count_label, GColorBlack);
@@ -311,7 +334,14 @@ static void init() {
     if (persist_exists(KEY_STRUCTURE)) {
         persist_read_data (KEY_STRUCTURE,&global_config,sizeof(global_config));
     
-//        APP_LOG (APP_LOG_LEVEL_DEBUG,"Read : year - %d, month - %d, - day %d, seconds %d, format %d, triangle %d",(int)global_config.year, global_config.month, global_config.day, global_config.showseconds, (int)global_config.countformat, global_config.showtriangle);
+    APP_LOG (APP_LOG_LEVEL_DEBUG,"Read : year - %d, month - %d, - day %d, seconds %d, format %d, triangle %d, batter %d, bluetooth %d, black %d",
+             (int)global_config.year, global_config.month, global_config.day, global_config.showseconds,
+             (int)global_config.countformat,
+             global_config.showtriangle,
+             global_config.battery,
+             global_config.bluetooth,
+             global_config.black
+            );
     } else {
         global_config.year = 2014;
         global_config.month = 11;
@@ -319,8 +349,18 @@ static void init() {
         global_config.showseconds = 1;
         global_config.countformat = FMT_DAYS;
         global_config.showtriangle = 1;
-
-//        APP_LOG (APP_LOG_LEVEL_DEBUG,"Set : year - %d, month - %d, - day %d, seconds %d, format %d, triangle %d",(int)global_config.year, global_config.month, global_config.day, global_config.showseconds, (int)global_config.countformat, global_config.showtriangle);
+        global_config.battery = 1;
+        global_config.bluetooth = 1;
+        global_config.black = 0;
+        
+        APP_LOG (APP_LOG_LEVEL_DEBUG,"Set : year - %d, month - %d, - day %d, seconds %d, format %d, triangle %d, batter %d, bluetooth %d, black %d",
+             (int)global_config.year, global_config.month, global_config.day, global_config.showseconds,
+             (int)global_config.countformat,
+             global_config.showtriangle,
+             global_config.battery,
+             global_config.bluetooth,
+             global_config.black
+            );
     }
     // Setup conter time from presist
     then.tm_hour = 0;
@@ -350,9 +390,9 @@ static void init() {
     /* init the triabgle for round or square */
     TRIANGLE_POINTS.points[0].x = bounds.size.w /2 ;
     TRIANGLE_POINTS.points[1].x = bounds.size.w / 9;
-    TRIANGLE_POINTS.points[1].y = bounds.size.h * .72;
+    TRIANGLE_POINTS.points[1].y = (bounds.size.h * 13) / 18;
     TRIANGLE_POINTS.points[2].x = (bounds.size.w * 8) / 9;
-    TRIANGLE_POINTS.points[2].y = bounds.size.h * .72;
+    TRIANGLE_POINTS.points[2].y = (bounds.size.h * 13) / 18;
     s_triangle = gpath_create(&TRIANGLE_POINTS);
 
     if (global_config.showseconds == 1) {

@@ -8,11 +8,14 @@
 
 struct dayface_config {
     uint32_t year;
+    uint32_t countformat;  /*days,months,year?*/
     uint8_t day;
     uint8_t month;
     uint8_t showseconds; /*show seconds*/
     uint8_t showtriangle; /* show triangle */
-    uint32_t countformat;  /*days,months,year?*/
+    uint8_t black; /*blac kor white*/
+    uint8_t battery; /*show battery*/
+    uint8_t bluetooth; /*show bluetooth*/
 } __attribute__((__packed__)) global_config;
 
 #define FMT_DAYS    1
@@ -29,6 +32,9 @@ struct dayface_config {
 #define KEY_SHOWSECONDS     3
 #define KEY_SHOWTRIANGLE    4
 #define KEY_FORMAT          5
+#define KEY_BLACK           6
+#define KEY_BATTERY         7
+#define KEY_BLUETOOTH       8
 
 static const struct GPathInfo ANALOG_BG_POINTS[] = {
   { 4, (GPoint []){ /*1*/
@@ -137,8 +143,8 @@ static const GPathInfo MINUTE_HAND_POINTS = {
   4, (GPoint []) {
     { -3, 20 },
     { 3, 20 },
-    { 3, -70 },
-    { -3, -70 }
+    { 3, -65 },
+    { -3, -65 }
   }
 };
 
@@ -146,7 +152,7 @@ static const GPathInfo HOUR_HAND_POINTS = {
   4, (GPoint []){
     {-3, 20},
     {3, 20},
-    {3, -50},
-    {-3,-50}
+    {3, -45},
+    {-3,-45}
   }
 };
