@@ -164,14 +164,15 @@ static void date_update_proc(Layer *layer, GContext *ctx) {
       BatteryChargeState charge_state = battery_state_service_peek();
       if (charge_state.is_charging) {
             snprintf(s_battery_buffer, sizeof(s_battery_buffer), "C");
+            text_layer_set_text_color(s_battery_label, COLOR_FALLBACK(GColorRed,s_forground_color));
         } else {
             if (charge_state.charge_percent<25) {
-                text_layer_set_text_color(s_battery_label, GColorRed);
+                text_layer_set_text_color(s_battery_label, COLOR_FALLBACK(GColorRed,s_forground_color));
             } else {
                 text_layer_set_text_color(s_battery_label, s_forground_color);
             }
+          snprintf(s_battery_buffer, sizeof(s_battery_buffer), "%d%%", charge_state.charge_percent);
         }
-        snprintf(s_battery_buffer, sizeof(s_battery_buffer), "%d%%", charge_state.charge_percent);
     }
 }
 
@@ -226,7 +227,7 @@ static void inbox_received_handler(DictionaryIterator *iter, void *context) {
     }
     
     if (black_t) {
-        APP_LOG (APP_LOG_LEVEL_DEBUG,"INFO: Black Changed");
+//        APP_LOG (APP_LOG_LEVEL_DEBUG,"INFO: Black Changed");
         global_config.black = black_t->value->int8;
         if (global_config.black == 0) {
             /* black background */
@@ -237,7 +238,7 @@ static void inbox_received_handler(DictionaryIterator *iter, void *context) {
             s_background_color = GColorWhite;
             s_forground_color = GColorBlack;
         }
-        /*just cause I can think of a better way to do this*/
+        /*just cause I can't think of a better way to do this*/
         text_layer_set_background_color(s_day_label, s_background_color);
         text_layer_set_text_color(s_day_label, s_forground_color);
     
@@ -259,7 +260,7 @@ static void inbox_received_handler(DictionaryIterator *iter, void *context) {
 //        layer_set_hidden(bitmap_layer_get_layer(s_bt_icon_layer),(global_config.bluetooth == 0));
 //    }
   
-    APP_LOG (APP_LOG_LEVEL_DEBUG,"Configged : year - %d, month - %d, - day %d", (int)global_config.year, global_config.month, global_config.day);
+/*    APP_LOG (APP_LOG_LEVEL_DEBUG,"Configged : year - %d, month - %d, - day %d", (int)global_config.year, global_config.month, global_config.day);
     APP_LOG (APP_LOG_LEVEL_DEBUG, "Seconds %d, format %d, triangle %d, battery %d, bluetooth %d, black %d",
              global_config.showseconds,
              (int)global_config.countformat,
@@ -267,6 +268,7 @@ static void inbox_received_handler(DictionaryIterator *iter, void *context) {
              global_config.battery,
              global_config.bluetooth,
              global_config.black);
+*/
 }
 
 
@@ -326,7 +328,7 @@ static void window_load(Window *window) {
     
     s_hands_layer = layer_create(bounds);
     
-    bluetooth_callback(connection_service_peek_pebble_app_connection());
+//    bluetooth_callback(connection_service_peek_pebble_app_connection());
 
     layer_set_update_proc(s_hands_layer, hands_update_proc);
     layer_add_child(window_layer, s_hands_layer);
@@ -368,7 +370,7 @@ static void init() {
     if (persist_exists(KEY_STRUCTURE)) {
         persist_read_data (KEY_STRUCTURE,&global_config,sizeof(global_config));
 
-    APP_LOG (APP_LOG_LEVEL_DEBUG,"Read : year - %d, month - %d, - day %d", (int)global_config.year, global_config.month, global_config.day);
+/*    APP_LOG (APP_LOG_LEVEL_DEBUG,"Read : year - %d, month - %d, - day %d", (int)global_config.year, global_config.month, global_config.day);
     APP_LOG (APP_LOG_LEVEL_DEBUG, "Seconds %d, format %d, triangle %d, battery %d, bluetooth %d, black %d",
              global_config.showseconds,
              (int)global_config.countformat,
@@ -376,6 +378,7 @@ static void init() {
              global_config.battery,
              global_config.bluetooth,
              global_config.black);
+  */
     } else {
         global_config.year = 2014;
         global_config.month = 11;
@@ -387,7 +390,7 @@ static void init() {
         global_config.bluetooth = 1;
         global_config.black = 0;
         
-    APP_LOG (APP_LOG_LEVEL_DEBUG,"Set : year - %d, month - %d, - day %d", (int)global_config.year, global_config.month, global_config.day);
+    /*APP_LOG (APP_LOG_LEVEL_DEBUG,"Set : year - %d, month - %d, - day %d", (int)global_config.year, global_config.month, global_config.day);
     APP_LOG (APP_LOG_LEVEL_DEBUG, "Seconds %d, format %d, triangle %d, battery %d, bluetooth %d, black %d",
              global_config.showseconds,
              (int)global_config.countformat,
@@ -395,6 +398,7 @@ static void init() {
              global_config.battery,
              global_config.bluetooth,
              global_config.black);
+    */
     }
     // Setup conter time from presist
     then.tm_hour = 0;
@@ -422,7 +426,7 @@ static void init() {
     }
 
     /* init the triabgle for round or square */
-    TRIANGLE_POINTS.points[0].x = (bounds.size.w /2) -1;
+    TRIANGLE_POINTS.points[0].x = bounds.size.w /2;
     TRIANGLE_POINTS.points[1].x = bounds.size.w / 9;
     TRIANGLE_POINTS.points[1].y = (bounds.size.h * 13) / 18;
     TRIANGLE_POINTS.points[2].x = (bounds.size.w * 8) / 9;

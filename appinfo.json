@@ -1,14 +1,14 @@
 {
     "appKeys": {
-        "yearfrom": 0,
+        "battery": 7,
+        "black": 6,
+        "bluetooth": 8,
+        "countformat": 5,
         "dayfrom": 1,
         "monthfrom": 2,
         "showseconds": 3,
         "showtriangle": 4,
-        "countformat": 5,
-        "black": 6,
-        "battery": 7,
-        "bluetooth": 8
+        "yearfrom": 0
     },
     "capabilities": [
         "configurable"
@@ -17,18 +17,7 @@
     "longName": "DayFace",
     "projectType": "native",
     "resources": {
-        "media": [
-            {
-                "file": "images/glass-small.png",
-                "name": "IMAGE_BT_ICON_GLASS",
-                "targetPlatforms": [
-                    "aplite",
-                    "basalt",
-                    "chalk"
-                ],
-                "type": "bitmap"
-            }
-        ]
+        "media": []
     },
     "sdkVersion": "3",
     "shortName": "DayFace",
