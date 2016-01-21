@@ -31,10 +31,26 @@ static void bluetooth_callback(bool connected) {
     }
 }
 
+static void update_text_layers() {
+    /*just cause I can't think of a better way to do this*/
+    text_layer_set_background_color(s_day_label, s_background_color);
+    text_layer_set_text_color(s_day_label, s_forground_color);
+    
+    text_layer_set_background_color(s_count_label, s_background_color);
+    text_layer_set_text_color(s_count_label, s_forground_color);
+    
+    text_layer_set_background_color(s_battery_label,s_background_color);
+    text_layer_set_text_color(s_battery_label, s_forground_color);
+}
+    
+
 static void bg_update_proc(Layer *layer, GContext *ctx) {
     int i;
     const int x_offset = PBL_IF_ROUND_ELSE(18, 0);
     const int y_offset = PBL_IF_ROUND_ELSE(6, 0);
+
+    s_background_color = ((global_config.white == 0) ? GColorBlack : GColorWhite);
+    s_forground_color = ((global_config.white == 0) ? GColorWhite : GColorBlack);
 
     graphics_context_set_fill_color(ctx, s_background_color);
     graphics_fill_rect(ctx, layer_get_bounds(layer), 0, GCornerNone);
@@ -73,6 +89,10 @@ static void hands_update_proc(Layer *layer, GContext *ctx) {
 
     const int16_t second_hand_length = PBL_IF_ROUND_ELSE((bounds.size.w / 2) - 19, bounds.size.w / 2);
 
+    s_background_color = ((global_config.white == 0) ? GColorBlack : GColorWhite);
+    s_forground_color = ((global_config.white == 0) ? GColorWhite : GColorBlack);
+    update_text_layers();
+ 
     time_t now = time(NULL);
     struct tm *t = localtime(&now);
     int32_t second_angle = TRIG_MAX_ANGLE * t->tm_sec / 60;
@@ -153,16 +173,19 @@ static void update_counter (struct tm *now_secs) {
 static void date_update_proc(Layer *layer, GContext *ctx) {
     time_t t = time(NULL);
     struct tm *now = localtime(&t);
- 
 
+    s_background_color = ((global_config.white == 0) ? GColorBlack : GColorWhite);
+    s_forground_color = ((global_config.white == 0) ? GColorWhite : GColorBlack);
+    update_text_layers();
+    
     strftime(s_date_buffer, sizeof(s_date_buffer), "%a %d", now);
     text_layer_set_text(s_day_label, s_date_buffer);
   
-  update_counter(now);
+    update_counter(now);
 
-  if (global_config.battery == 1) {
-      BatteryChargeState charge_state = battery_state_service_peek();
-      if (charge_state.is_charging) {
+    if (global_config.battery == 1) {
+        BatteryChargeState charge_state = battery_state_service_peek();
+        if (charge_state.is_charging) {
             snprintf(s_battery_buffer, sizeof(s_battery_buffer), "C");
             text_layer_set_text_color(s_battery_label, COLOR_FALLBACK(GColorRed,s_forground_color));
         } else {
@@ -229,24 +252,10 @@ static void inbox_received_handler(DictionaryIterator *iter, void *context) {
     if (white_t) {
 //        APP_LOG (APP_LOG_LEVEL_DEBUG,"INFO: Black Changed");
         global_config.white = white_t->value->int8;
-        if (global_config.white == 0) {
-            /* white background */
-            s_background_color = GColorBlack;
-            s_forground_color = GColorWhite;
-        } else {
-            /* white background */
-            s_background_color = GColorWhite;
-            s_forground_color = GColorBlack;
-        }
-        /*just cause I can't think of a better way to do this*/
-        text_layer_set_background_color(s_day_label, s_background_color);
-        text_layer_set_text_color(s_day_label, s_forground_color);
-    
-        text_layer_set_background_color(s_count_label, s_background_color);
-        text_layer_set_text_color(s_count_label, s_forground_color);
-    
-        text_layer_set_background_color(s_battery_label,s_background_color);
-        text_layer_set_text_color(s_battery_label, s_forground_color);
+        s_background_color = ((global_config.white == 0) ? GColorBlack : GColorWhite);
+        s_forground_color = ((global_config.white == 0) ? GColorWhite : GColorBlack);
+
+        update_text_layers();
     }
     
     if (battery_t) {
@@ -276,15 +285,16 @@ static void window_load(Window *window) {
     GRect bounds = layer_get_bounds(window_layer);
     GPoint centre = grect_center_point(&bounds);
 
-    if (global_config.white == 0) {
-        /* white background */
-        s_background_color = GColorBlack;
-        s_forground_color = GColorWhite;
-    } else {
-         /* white background */
-        s_background_color = GColorWhite;
-        s_forground_color = GColorBlack;
-    }
+    s_background_color = ((global_config.white == 0) ? GColorBlack : GColorWhite);
+    s_forground_color = ((global_config.white == 0) ? GColorWhite : GColorBlack);
+    APP_LOG (APP_LOG_LEVEL_DEBUG,"Configged : year - %d, month - %d, - day %d", (int)global_config.year, global_config.month, global_config.day);
+    APP_LOG (APP_LOG_LEVEL_DEBUG, "Seconds %d, format %d, triangle %d, battery %d, bluetooth %d, white %d",
+             global_config.showseconds,
+             (int)global_config.countformat,
+             global_config.showtriangle,
+             global_config.battery,
+             global_config.bluetooth,
+             global_config.white);
     
     s_simple_bg_layer = layer_create(bounds);
     layer_set_update_proc(s_simple_bg_layer, bg_update_proc);
