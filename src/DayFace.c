@@ -260,15 +260,14 @@ static void inbox_received_handler(DictionaryIterator *iter, void *context) {
 //        layer_set_hidden(bitmap_layer_get_layer(s_bt_icon_layer),(global_config.bluetooth == 0));
 //    }
   
-/*    APP_LOG (APP_LOG_LEVEL_DEBUG,"Configged : year - %d, month - %d, - day %d", (int)global_config.year, global_config.month, global_config.day);
-    APP_LOG (APP_LOG_LEVEL_DEBUG, "Seconds %d, format %d, triangle %d, battery %d, bluetooth %d, white %d",
-             global_config.showseconds,
-             (int)global_config.countformat,
-             global_config.showtriangle,
-             global_config.battery,
-             global_config.bluetooth,
-             global_config.white);
-*/
+//    APP_LOG (APP_LOG_LEVEL_DEBUG,"Configged : year - %d, month - %d, - day %d", (int)global_config.year, global_config.month, global_config.day);
+//    APP_LOG (APP_LOG_LEVEL_DEBUG, "Seconds %d, format %d, triangle %d, battery %d, bluetooth %d, white %d",
+//             global_config.showseconds,
+//             (int)global_config.countformat,
+//             global_config.showtriangle,
+//             global_config.battery,
+//             global_config.bluetooth,
+//             global_config.white);
 }
 
 
@@ -316,6 +315,7 @@ static void window_load(Window *window) {
     text_layer_set_text_color(s_count_label, s_forground_color);
     text_layer_set_font(s_count_label, fonts_get_system_font(FONT_KEY_GOTHIC_18));
     layer_add_child(s_date_layer, text_layer_get_layer(s_count_label));
+    layer_set_hidden(text_layer_get_layer(s_count_label),(global_config.countformat == FMT_BLANK));
     
     s_battery_label = text_layer_create(GRect(((bounds.size.w*5)/18)-30, centre.y-10, 61, 21));
     text_layer_set_text_alignment(s_battery_label,GTextAlignmentCenter);
@@ -324,6 +324,7 @@ static void window_load(Window *window) {
     text_layer_set_text_color(s_battery_label, s_forground_color);
     text_layer_set_font(s_battery_label, fonts_get_system_font(FONT_KEY_GOTHIC_14));
     layer_add_child(s_date_layer, text_layer_get_layer(s_battery_label));
+    layer_set_hidden(text_layer_get_layer(s_battery_label),(global_config.battery == 0));
     
     
     s_hands_layer = layer_create(bounds);
@@ -370,15 +371,15 @@ static void init() {
     if (persist_exists(KEY_STRUCTURE)) {
         persist_read_data (KEY_STRUCTURE,&global_config,sizeof(global_config));
 
-/*    APP_LOG (APP_LOG_LEVEL_DEBUG,"Read : year - %d, month - %d, - day %d", (int)global_config.year, global_config.month, global_config.day);
-    APP_LOG (APP_LOG_LEVEL_DEBUG, "Seconds %d, format %d, triangle %d, battery %d, bluetooth %d, white %d",
-             global_config.showseconds,
-             (int)global_config.countformat,
-             global_config.showtriangle,
-             global_config.battery,
-             global_config.bluetooth,
-             global_config.white);
-  */
+//    APP_LOG (APP_LOG_LEVEL_DEBUG,"Read : year - %d, month - %d, - day %d", (int)global_config.year, global_config.month, global_config.day);
+//    APP_LOG (APP_LOG_LEVEL_DEBUG, "Seconds %d, format %d, triangle %d, battery %d, bluetooth %d, white %d",
+//             global_config.showseconds,
+//             (int)global_config.countformat,
+//             global_config.showtriangle,
+//             global_config.battery,
+//             global_config.bluetooth,
+//             global_config.white);
+  
     } else {
         global_config.year = 2014;
         global_config.month = 11;
@@ -390,15 +391,14 @@ static void init() {
         global_config.bluetooth = 1;
         global_config.white = 0;
         
-    /*APP_LOG (APP_LOG_LEVEL_DEBUG,"Set : year - %d, month - %d, - day %d", (int)global_config.year, global_config.month, global_config.day);
-    APP_LOG (APP_LOG_LEVEL_DEBUG, "Seconds %d, format %d, triangle %d, battery %d, bluetooth %d, white %d",
-             global_config.showseconds,
-             (int)global_config.countformat,
-             global_config.showtriangle,
-             global_config.battery,
-             global_config.bluetooth,
-             global_config.white);
-    */
+//        APP_LOG (APP_LOG_LEVEL_DEBUG,"Set : year - %d, month - %d, - day %d", (int)global_config.year, global_config.month, global_config.day);
+//        APP_LOG (APP_LOG_LEVEL_DEBUG, "Seconds %d, format %d, triangle %d, battery %d, bluetooth %d, white %d",
+//             global_config.showseconds,
+//             (int)global_config.countformat,
+//             global_config.showtriangle,
+//             global_config.battery,
+//             global_config.bluetooth,
+//             global_config.white);
     }
     // Setup conter time from presist
     then.tm_hour = 0;
