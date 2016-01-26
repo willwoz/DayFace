@@ -8,7 +8,7 @@
 </head>
 <body>
     <div class='item-container'>
-        <h1 class='title'>DayFace Configuration</h1>
+        <h1 class='title'>DayFace 2.0 Configuration</h1>
     </div>
     
     <div class='item-container'>
@@ -32,6 +32,10 @@
         <div class='item-container-header'>Component Toggles</div>
         <div class='item-container-content'>
             <label class="item">
+                Show Date
+                <input id="showdateCheckBox" type="checkbox" class="item-toggle" checked>
+            </label>
+            <label class="item">
                 Show Seconds
                 <input id="showsecondsCheckBox" type="checkbox" class="item-toggle" checked>
             </label>
@@ -50,6 +54,31 @@
         </div>
     </div>
 
+    <div class='item-container'>
+        <div class='item-container-header'>Weather Settings</div>
+        <div class='item-container-content'>
+            <label class="item">
+                Show Weather
+                <input id="showweatherCheckBox" type="checkbox" class="item-toggle" checked>
+            </label>
+            <label class="item">
+                Show Location
+                <input id="showlocationCheckBox" type="checkbox" class="item-toggle" checked>
+            </label>
+
+            <label class="item">
+                Use Fahrenheit
+                <input id="showfahrenheitCheckBox" type="checkbox" class="item-toggle" unchecked>
+            </label>
+            <label class='item'>Weather Update Frequency 15 -> 120 minutes</label>
+            <label class="item">
+                <input id="weatherpollSlider" type="range" min='15' max='120' step='15' class="item-slider" name="slider-1" value="60">
+                    <div class="item-input-wrapper item-slider-text">
+                        <input type="number" min='15' max='120' step='15' class="item-input"  name="slider-1" value="60">
+                    </div>
+            </label>
+        </div>
+    </div>
 
     <div class="item-container">
         <div class="button-container">
