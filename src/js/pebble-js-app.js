@@ -21,14 +21,15 @@ function locationSuccess(pos) {
 
             // Temperature in Kelvin requires adjustment
             var temperature = Math.round(json.main.temp - 273.15);
-            console.log('Temperature is ' + temperature);
+//             var temperature = json.main.temp - 273.15)
+//            console.log('Temperature is ' + temperature);
 
             // Conditions
             var conditions = json.weather[0].main;      
-            console.log('Conditions are ' + conditions);
+//            console.log('Conditions are ' + conditions);
             
             var curr_location = json.name;
-            console.log('Location is are ' + curr_location);
+//            console.log('Location is are ' + curr_location);
 
           // Send tp Pebble
             var transactionId = Pebble.sendAppMessage({

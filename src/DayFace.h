@@ -2,7 +2,7 @@
 
 #include "pebble.h"
 
-//#define DO_DEBUG_LOGS
+#define DO_DEBUG_LOGS
 
 #define STORAGE_VERSION_KEY    99
 #define STORAGE_VERSION        2

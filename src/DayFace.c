@@ -9,13 +9,15 @@ static GPath *s_tick_paths[NUM_CLOCK_TICKS];
 static GPath *s_minute_arrow, *s_hour_arrow;
 static GPath *s_triangle,*s_bt_path;
 
-static GColor s_background_color,s_forground_color;
+static GColor s_background_color,s_forground_color,s_battery_color;
 
 static char s_num_buffer[4], s_day_buffer[6], s_count_buffer[14], s_date_buffer[10],s_battery_buffer[5], s_weather_buffer[20], s_location_buffer[15];
 
 static struct tm then;
 static int s_current_temp;
 static char s_current_conditions[15];
+static BatteryChargeState charge_state;
+
 
 static void bluetooth_callback(bool connected) {
     // Show icon if disconnected
@@ -47,8 +49,11 @@ static void update_text_layers() {
 
     
     text_layer_set_background_color(s_battery_label,s_background_color);
-    text_layer_set_text_color(s_battery_label, s_forground_color);
-    layer_set_hidden(text_layer_get_layer(s_battery_label),(global_config.battery == 0));
+    text_layer_set_text_color(s_battery_label, s_battery_color);
+#ifdef DO_DEBUG_LOGS
+    APP_LOG(APP_LOG_LEVEL_DEBUG,"Show: %d, Low %d, hidden %d", global_config.battery,(charge_state.charge_percent < 25), ((global_config.battery == 1) || (charge_state.charge_percent < 25)));
+#endif
+    layer_set_hidden(text_layer_get_layer(s_battery_label),!((global_config.battery == 1) || (charge_state.charge_percent < 25)));
    
     text_layer_set_background_color(s_weather_label,s_background_color);
     text_layer_set_text_color(s_weather_label, s_forground_color);
@@ -180,7 +185,20 @@ static void update_counter (struct tm *now_secs) {
     }
     text_layer_set_text(s_count_label, s_count_buffer);
 }
-    
+
+static void update_battery() {
+    charge_state = battery_state_service_peek();
+        
+    if (charge_state.is_charging) {
+        snprintf(s_battery_buffer, sizeof(s_battery_buffer), "C");
+    s_battery_color = COLOR_FALLBACK(GColorRed,s_forground_color);
+    } else {
+        s_battery_color = ((charge_state.charge_percent<25) ? COLOR_FALLBACK(GColorRed,s_forground_color) : s_forground_color);
+    }
+    text_layer_set_text_color(s_battery_label, s_battery_color );
+    snprintf(s_battery_buffer, sizeof(s_battery_buffer), "%d%%", charge_state.charge_percent);
+}
+
 static void date_update_proc(Layer *layer, GContext *ctx) {
     time_t t = time(NULL);
     struct tm *now = localtime(&t);
@@ -194,20 +212,7 @@ static void date_update_proc(Layer *layer, GContext *ctx) {
   
     update_counter(now);
 
-    if (global_config.battery == 1) {
-        BatteryChargeState charge_state = battery_state_service_peek();
-        if (charge_state.is_charging) {
-            snprintf(s_battery_buffer, sizeof(s_battery_buffer), "C");
-            text_layer_set_text_color(s_battery_label, COLOR_FALLBACK(GColorRed,s_forground_color));
-        } else {
-            if (charge_state.charge_percent<25) {
-                text_layer_set_text_color(s_battery_label, COLOR_FALLBACK(GColorRed,s_forground_color));
-            } else {
-                text_layer_set_text_color(s_battery_label, s_forground_color);
-            }
-          snprintf(s_battery_buffer, sizeof(s_battery_buffer), "%d%%", charge_state.charge_percent);
-        }
-    }
+    update_battery();
     
     update_text_layers();
 }
