@@ -1,18 +1,24 @@
 {
     "appKeys": {
         "battery": 7,
-        "white": 6,
         "bluetooth": 8,
+        "conditions": 21,
         "countformat": 5,
         "dayfrom": 1,
         "monthfrom": 2,
         "showseconds": 3,
         "showtriangle": 4,
-        "yearfrom": 0
+        "temperature": 20,
+        "white": 6,
+        "yearfrom": 0,
+        "showweather": 9,
+        "showfahrenheit": 10,
+        "weatherpoll": 11,
+        "showdate": 12,
+        "showlocation": 13,
+        "currlocation": 22
     },
-    "capabilities": [
-        "configurable"
-    ],
+    "capabilities": [ "configurable", "location" ],
     "companyName": "Leftside Design",
     "longName": "DayFace",
     "projectType": "native",
@@ -27,7 +33,7 @@
         "chalk"
     ],
     "uuid": "9c9fdbbe-a33a-48f1-bd6a-345a655ebb9f",
-    "versionLabel": "1.01",
+    "versionLabel": "2.0",
     "watchapp": {
         "watchface": true
     }
