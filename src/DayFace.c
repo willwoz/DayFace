@@ -50,9 +50,9 @@ static void update_text_layers() {
     
     text_layer_set_background_color(s_battery_label,s_background_color);
     text_layer_set_text_color(s_battery_label, s_battery_color);
-#ifdef DO_DEBUG_LOGS
-    APP_LOG(APP_LOG_LEVEL_DEBUG,"Show: %d, Low %d, hidden %d", global_config.battery,(charge_percent < LOW_BATTERY), ((global_config.battery == 1) || (charge_percent < LOW_BATTERY)));
-#endif
+// #ifdef DO_DEBUG_LOGS
+//     APP_LOG(APP_LOG_LEVEL_DEBUG,"Show: %d, Low %d, hidden %d", global_config.battery,(charge_percent < LOW_BATTERY), ((global_config.battery == 1) || (charge_percent < LOW_BATTERY)));
+// #endif
     layer_set_hidden(text_layer_get_layer(s_battery_label),!((global_config.battery == 1) || (charge_percent <= LOW_BATTERY)));
    
     text_layer_set_background_color(s_weather_label,s_background_color);
@@ -190,11 +190,14 @@ static void update_battery_handler(BatteryChargeState charge_state) {
         
     if (charge_state.is_charging) {
         snprintf(s_battery_buffer, sizeof(s_battery_buffer), "C");
-    s_battery_color = COLOR_FALLBACK(GColorRed,s_forground_color);
+        s_battery_color = COLOR_FALLBACK(GColorRed,s_forground_color);
     } else {
         charge_percent = charge_state.charge_percent;
         s_battery_color = ((charge_state.charge_percent<= LOW_BATTERY) ? COLOR_FALLBACK(GColorRed,s_forground_color) : s_forground_color);
     }
+#ifdef DO_DEBUG_LOGS
+    APP_LOG(APP_LOG_LEVEL_DEBUG,"Charge %% - %d",charge_percent);
+#endif
     text_layer_set_text_color(s_battery_label, s_battery_color );
     snprintf(s_battery_buffer, sizeof(s_battery_buffer), "%d%%", charge_state.charge_percent);
 }
@@ -221,9 +224,9 @@ static void update_weather(struct tm *tick_time) {
     // Get weather update every 30 minutes
     if (tick_time == NULL) {
         // forced weather update
-#ifdef DO_DEBUG_LOGS
-        APP_LOG (APP_LOG_LEVEL_DEBUG,"Polling Checked: time to poll =time_to_poll: %d - poll_once: %d",s_time_to_poll,s_weather_updated);
-#endif
+// #ifdef DO_DEBUG_LOGS
+//         APP_LOG (APP_LOG_LEVEL_DEBUG,"Polling Checked: time to poll =time_to_poll: %d - poll_once: %d",s_time_to_poll,s_weather_updated);
+// #endif
         app_message_outbox_begin(&iter);
         // Add a key-value pair
         dict_write_uint8(iter, 0, 0);
@@ -232,15 +235,15 @@ static void update_weather(struct tm *tick_time) {
     } else {
         if((tick_time->tm_min % WEATHER_POLL_DIV) == 0) {
             if (s_weather_updated == 0) {
-#ifdef DO_DEBUG_LOGS
-                APP_LOG (APP_LOG_LEVEL_DEBUG,"Polling Weather min: %d div: %d poll_once: %d time_to_poll: %d",tick_time->tm_min,WEATHER_POLL_DIV,s_weather_updated,s_time_to_poll);
-#endif
+// #ifdef DO_DEBUG_LOGS
+//                 APP_LOG (APP_LOG_LEVEL_DEBUG,"Polling Weather min: %d div: %d poll_once: %d time_to_poll: %d",tick_time->tm_min,WEATHER_POLL_DIV,s_weather_updated,s_time_to_poll);
+// #endif
                 if (s_time_to_poll == 0) {
                     // Begin dictionary
                     s_time_to_poll = global_config.weatherpoll;
-#ifdef DO_DEBUG_LOGS
-                    APP_LOG (APP_LOG_LEVEL_DEBUG,"Polling Checked: time to poll =time_to_poll: %d - poll_once: %d",s_time_to_poll,s_weather_updated);
-#endif
+// #ifdef DO_DEBUG_LOGS
+//                     APP_LOG (APP_LOG_LEVEL_DEBUG,"Polling Checked: time to poll =time_to_poll: %d - poll_once: %d",s_time_to_poll,s_weather_updated);
+// #endif
                     app_message_outbox_begin(&iter);
 
                     // Add a key-value pair
@@ -484,20 +487,21 @@ static void window_load(Window *window) {
     text_layer_set_text_color(s_battery_label, s_forground_color);
     text_layer_set_font(s_battery_label, fonts_get_system_font(FONT_KEY_GOTHIC_14));
     layer_add_child(s_date_layer, text_layer_get_layer(s_battery_label));
-    layer_set_hidden(text_layer_get_layer(s_battery_label),(global_config.battery == 0));
-   
+   layer_set_hidden(text_layer_get_layer(s_battery_label),!((global_config.battery == 1) || (charge_percent <= LOW_BATTERY)));
+ 
     s_hands_layer = layer_create(bounds);
     
 
     layer_set_update_proc(s_hands_layer, hands_update_proc);
     layer_add_child(window_layer, s_hands_layer);
     
- 
     // Show the correct state of the BT connection from the start
     bluetooth_callback(connection_service_peek_pebble_app_connection());
     
     //show batter state from start
     update_battery_handler( battery_state_service_peek() );
+
+    update_text_layers();//    update_battery_handler( battery_state_service_peek() );
 }
 
 static void window_unload(Window *window) {
