@@ -2,10 +2,10 @@
 
 #include "pebble.h"
 
-//#define DO_DEBUG_LOGS
+// #define DO_DEBUG_LOGS
 
 #define STORAGE_VERSION_KEY    99
-#define STORAGE_VERSION        2
+#define STORAGE_VERSION        3
 
 #define LOW_BATTERY     10
 
@@ -28,11 +28,16 @@ struct dayface_config {
     uint8_t showfahrenheit;
     uint8_t showdate;
     uint8_t showlocation;
+    uint8_t hourly; /*hourly reminder*/
 } __attribute__((__packed__)) global_config;
 
 #define WEATHER_POLL_DIV 15
 static int s_time_to_poll;
 static int s_weather_updated = 0;
+
+static int s_hourly_done = 0;
+static const uint32_t const segments[] = { 200, 400, 200, 400, 200 };
+#define SHAKE_TIME  0
 
 #define FMT_DAYS    1
 #define FMT_ZEN     2
@@ -57,6 +62,7 @@ static int s_weather_updated = 0;
 #define KEY_WEATHERPOLL     11
 #define KEY_SHOWDATE        12
 #define KEY_SHOWLOCATION    13
+#define KEY_HOURLY          14
 #define KEY_TEMPERATURE     20
 #define KEY_CONDITIONS      21
 #define KEY_LOCATION        22

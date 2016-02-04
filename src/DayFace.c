@@ -265,7 +265,30 @@ static void handle_second_tick(struct tm *tick_time, TimeUnits units_changed) {
     
     if (global_config.showweather == 1)
         update_weather(tick_time);
+    
+    if (global_config.hourly == 1) {
+#ifdef DO_DEBUG_LOGS
+        APP_LOG(APP_LOG_LEVEL_DEBUG,"hourly: %d - Minutes: %d",s_hourly_done,tick_time->tm_min);
+#endif
+        if (tick_time->tm_min == SHAKE_TIME) {
+            if (s_hourly_done == 0) {
+                // Vibe pattern: ON for 200ms, OFF for 100ms, ON for 400ms:
 
+                VibePattern pat = {
+                    .durations = segments,
+                    .num_segments = ARRAY_LENGTH(segments),
+                };
+                vibes_enqueue_custom_pattern(pat);
+#ifdef DO_DEBUG_LOGS
+        APP_LOG(APP_LOG_LEVEL_DEBUG,"Doodle Shake Shake");
+#endif
+                s_hourly_done = 1;
+            }
+        } else {
+            s_hourly_done = 0;
+        }
+    }
+    
     layer_mark_dirty(window_get_root_layer(s_window));
 }
 
@@ -561,6 +584,7 @@ static void init_config() {
             global_config.weatherpoll = 60;
             global_config.showdate = 1;
             global_config.showlocation = 1;
+            global_config.hourly = 1;
 #ifdef DO_DEBUG_LOGS
             APP_LOG (APP_LOG_LEVEL_DEBUG,"Set Old version: %d year - %d, month - %d, - day %d", version,(int)global_config.year, global_config.month, global_config.day);
             APP_LOG (APP_LOG_LEVEL_DEBUG, "Seconds %d, format %d, triangle %d, battery %d, bluetooth %d, white %d",
