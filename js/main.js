@@ -27,6 +27,7 @@ function getAndStoreConfigData() {
     var $weatherpollSlider = $('#weatherpollSlider');
     var $showdateCheckBox = $('#showdateCheckBox');
     var $showlocationCheckBox = $('#showlocationCheckBox');
+    var $hourlyCheckBox = $('#hourlyCheckBox');
     
   var options = {
     countfrom: $countfromDate.val(),
@@ -40,7 +41,8 @@ function getAndStoreConfigData() {
     showfahrenheit : $showfahrenheitCheckBox[0].checked,
     weatherpoll : $weatherpollSlider.val(),
     showdate : $showdateCheckBox[0].checked,
-    showlocation : $showlocationCheckBox[0].checked
+    showlocation : $showlocationCheckBox[0].checked,
+    hourly : $hourlyCheckBox[0].checked
   };
 
     localStorage.countfrom = options.countfrom;
@@ -53,9 +55,10 @@ function getAndStoreConfigData() {
     localStorage.showweather = options.showweather;
     localStorage.showfahrenheit = options.showfahrenheit;
     localStorage.weatherpoll = options.weatherpoll;
-    localStorage.showdate = options.showdate
-    localStorage.showlocation = options.showlocation
-    console.log('Got options main.js: ' + JSON.stringify(options));
+    localStorage.showdate = options.showdate;
+    localStorage.showlocation = options.showlocation;
+    localStorage.hourly = options.hourly;
+//    console.log('Got options main.js: ' + JSON.stringify(options));
     return options;
 }
 
@@ -70,8 +73,10 @@ function loadOptions() {
     var $showweatherCheckBox = $('#showweatherCheckBox');
     var $showfahrenheitCheckBox = $('#showfahrenheitCheckBox');
     var $weatherpollSlider = $('#weatherpollSlider');
+    var $weatherpollNumber = $('#weatherpollNumber');
     var $showdateCheckBox = $('#showdateCheckBox');
     var $showlocationCheckBox = $('#showlocationCheckBox');
+    var $hourlyCheckBox = $('#hourlyCheckBox');
 
     if (localStorage.countfrom) {
         $countfromDate[0].value = localStorage.countfrom;
@@ -84,8 +89,10 @@ function loadOptions() {
         $showweatherCheckBox[0].checked = (localStorage.showweather === 'true');
         $showfahrenheitCheckBox[0].checked = (localStorage.showfahrenheit === 'true');
         $weatherpollSlider[0].value = localStorage.weatherpoll;
+        $weatherpollNumber[0].value = localStorage.weatherpoll;
         $showdateCheckBox[0].checked = (localStorage.showdate === 'true');
         $showlocationCheckBox[0].checked = (localStorage.showlocation === 'true');
+        $hourlyCheckBox[0].checked = (localStorage.hourly === 'true');
     }
 }
 

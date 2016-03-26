@@ -8,7 +8,7 @@
 </head>
 <body>
     <div class='item-container'>
-        <h1 class='title'>DayFace 2.0 Configuration</h1>
+        <h1 class='title'>DayFace 3.0 Configuration</h1>
     </div>
     
     <div class='item-container'>
@@ -51,6 +51,10 @@
                 White Background
                 <input id="whiteCheckBox" type="checkbox" class="item-toggle" unchecked>
             </label>
+            <label class="item">
+                Hourly Shake
+                <input id="hourlyCheckBox" type="checkbox" class="item-toggle" checked>
+            </label>
         </div>
     </div>
 
@@ -74,7 +78,7 @@
             <label class="item">
                 <input id="weatherpollSlider" type="range" min='15' max='120' step='15' class="item-slider" name="slider-1" value="60">
                     <div class="item-input-wrapper item-slider-text">
-                        <input type="number" min='15' max='120' step='15' class="item-input"  name="slider-1" value="60">
+                        <input id="weatherpollNumber" type="number" min='15' max='120' step='15' class="item-input"  name="slider-1" value="60">
                     </div>
             </label>
         </div>
