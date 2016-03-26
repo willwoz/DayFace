@@ -287,7 +287,13 @@ static void handle_second_tick(struct tm *tick_time, TimeUnits units_changed) {
         } else {
             s_hourly_done = 0;
         }
+    } 
+#ifdef DO_DEBUG_LOGS
+    else {
+        APP_LOG(APP_LOG_LEVEL_DEBUG,"No Shaky Shaky");
     }
+#endif
+    
     
     layer_mark_dirty(window_get_root_layer(s_window));
 }
@@ -411,6 +417,12 @@ static void inbox_received_handler(DictionaryIterator *iter, void *context) {
 #endif
                 global_config.showdate = t->value->int8;
                 break;
+            case KEY_HOURLY:
+#ifdef DO_DEBUG_LOGS
+                APP_LOG (APP_LOG_LEVEL_DEBUG,"INFO: Hourly Changed %d",t->value->int8);
+#endif
+                global_config.hourly = t->value->int8;
+                break;                
             case KEY_SHOWLOCATION:
 #ifdef DO_DEBUG_LOGS
                 APP_LOG (APP_LOG_LEVEL_DEBUG,"INFO: ShowLocation Changed %d",t->value->int8);
@@ -423,12 +435,15 @@ static void inbox_received_handler(DictionaryIterator *iter, void *context) {
   
 #ifdef DO_DEBUG_LOGS
     APP_LOG (APP_LOG_LEVEL_DEBUG,"AppMessage : year - %d, month - %d, - day %d", (int)global_config.year, global_config.month, global_config.day);
-    APP_LOG (APP_LOG_LEVEL_DEBUG, "Seconds %d, format %d, triangle %d, battery %d, bluetooth %d, white %d, weather %d, f %d,p %d, date %d, loc %d",
+    APP_LOG (APP_LOG_LEVEL_DEBUG, "Seconds %d, format %d, triangle %d, battery %d, bluetooth %d, hourly %d",
         global_config.showseconds,
         (int)global_config.countformat,
         global_config.showtriangle,
         global_config.battery,
         global_config.bluetooth,
+        global_config.hourly
+    );
+    APP_LOG (APP_LOG_LEVEL_DEBUG, "white %d, weather %d, f %d,p %d, date %d, loc %d",
         global_config.white,
         global_config.showweather,
         global_config.showfahrenheit,
@@ -554,19 +569,22 @@ static void init_config() {
 
 #ifdef DO_DEBUG_LOGS
             APP_LOG (APP_LOG_LEVEL_DEBUG,"Read %d : year - %d, month - %d, - day %d",version, (int)global_config.year, global_config.month, global_config.day);
-            APP_LOG (APP_LOG_LEVEL_DEBUG, "Seconds %d, format %d, triangle %d, battery %d, bluetooth %d, white %d, weather %d,f %d,p %d, date %d, loc %d",
+            APP_LOG (APP_LOG_LEVEL_DEBUG, "Seconds %d, format %d, triangle %d, battery %d, bluetooth %d, hourly %d",
                 global_config.showseconds,
                 (int)global_config.countformat,
                 global_config.showtriangle,
                 global_config.battery,
                 global_config.bluetooth,
+                global_config.hourly
+            );
+            APP_LOG (APP_LOG_LEVEL_DEBUG, "white %d, weather %d, f %d,p %d, date %d, loc %d",
                 global_config.white,
                 global_config.showweather,
                 global_config.showfahrenheit,
                 global_config.weatherpoll,
                 global_config.showdate,
                 global_config.showlocation
-            );  
+                );  
 #endif
             break;
         default : 
@@ -587,21 +605,22 @@ static void init_config() {
             global_config.hourly = 1;
 #ifdef DO_DEBUG_LOGS
             APP_LOG (APP_LOG_LEVEL_DEBUG,"Set Old version: %d year - %d, month - %d, - day %d", version,(int)global_config.year, global_config.month, global_config.day);
-            APP_LOG (APP_LOG_LEVEL_DEBUG, "Seconds %d, format %d, triangle %d, battery %d, bluetooth %d, white %d",
+            APP_LOG (APP_LOG_LEVEL_DEBUG, "Seconds %d, format %d, triangle %d, battery %d, bluetooth %d, hourly %d",
                 global_config.showseconds,
                 (int)global_config.countformat,
                 global_config.showtriangle,
                 global_config.battery,
                 global_config.bluetooth,
-                global_config.white
+                global_config.hourly
             );
-            APP_LOG (APP_LOG_LEVEL_DEBUG, "weather %d,f %d,p %d, date %d, loc %d",
+            APP_LOG (APP_LOG_LEVEL_DEBUG, "white %d, weather %d, f %d,p %d, date %d, loc %d",
+                global_config.white,
                 global_config.showweather,
                 global_config.showfahrenheit,
                 global_config.weatherpoll,
                 global_config.showdate,
                 global_config.showlocation
-            );  
+                );  
 #endif
     }
     

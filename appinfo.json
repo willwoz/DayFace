@@ -16,6 +16,7 @@
         "weatherpoll": 11,
         "showdate": 12,
         "showlocation": 13,
+	"hourly": 14,
         "currlocation": 22
     },
     "capabilities": [ "configurable", "location" ],

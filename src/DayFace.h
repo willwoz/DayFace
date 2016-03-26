@@ -2,7 +2,7 @@
 
 #include "pebble.h"
 
-// #define DO_DEBUG_LOGS
+//#define DO_DEBUG_LOGS
 
 #define STORAGE_VERSION_KEY    99
 #define STORAGE_VERSION        3
@@ -199,3 +199,5 @@ static const GPathInfo HOUR_HAND_POINTS = {
     {-3,-45}
   }
 };
+
+static const GPathInfo *HOUR_HAND_POINTS_ARRAY[2] = { &HOUR_HAND_POINTS, &HOUR_HAND_POINTS };

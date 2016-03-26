@@ -76,7 +76,7 @@ Pebble.addEventListener('appmessage', function(e) {
 
 Pebble.addEventListener('showConfiguration', function() {
     var url = 'https://willwoz.github.io/DayFace/';
-//     var url = 'https://6eef9344.ngrok.io';
+//    var url = 'http://b10dde57.ngrok.io';
     
     console.log('Showing configuration page: ' + url);
 
@@ -104,7 +104,8 @@ Pebble.addEventListener('webviewclosed', function(e) {
             showfahrenheit: configData.showfahrenheit,
             weatherpoll: parseInt(configData.weatherpoll),
             showdate: configData.showdate,
-            showlocation: configData.showlocation
+            showlocation: configData.showlocation,
+            hourly: configData.hourly
         }, function(e) {
             console.log('Send successful!');
         }, function(e) {
