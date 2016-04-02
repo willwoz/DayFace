@@ -43,7 +43,7 @@ function getAndStoreConfigData() {
     weatherpoll : $weatherpollSlider.val(),
     showdate : $showdateCheckBox[0].checked,
     showlocation : $showlocationCheckBox[0].checked,
-    hourly : $hourlyCheckBox[0].checked
+    hourly : $hourlyCheckBox[0].checked,
     cleanface : $cleanfaceCheckBox[0].checked
   };
 
@@ -61,7 +61,8 @@ function getAndStoreConfigData() {
     localStorage.showlocation = options.showlocation;
     localStorage.hourly = options.hourly;
     localStorage.cleanface = options.cleanface;
-//    console.log('Got options main.js: ' + JSON.stringify(options));
+    
+    console.log('Got options main.js: ' + JSON.stringify(options));
     return options;
 }
 
@@ -98,7 +99,6 @@ function loadOptions() {
         $showlocationCheckBox[0].checked = (localStorage.showlocation === 'true');
         $hourlyCheckBox[0].checked = (localStorage.hourly === 'true');
         $cleanfaceCheckBox[0].checked = (localStorage.cleanface === 'true');
-        
     }
 }
 
