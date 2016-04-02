@@ -5,7 +5,7 @@
 #define DO_DEBUG_LOGS
 
 #define STORAGE_VERSION_KEY    99
-#define STORAGE_VERSION        3
+#define STORAGE_VERSION        4
 
 #define LOW_BATTERY     10
 
@@ -69,7 +69,7 @@ static const uint32_t const segments[] = { 200, 400, 200, 400, 200 };
 #define KEY_CONDITIONS      21
 #define KEY_LOCATION        22
 
-#define KEY_TOTAL_KEYS      21
+#define KEY_TOTAL_KEYS      22
 
 static const struct GPathInfo ANALOG_BG_POINTS[] = {
   { 4, (GPoint []){ /*1*/
