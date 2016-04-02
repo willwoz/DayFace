@@ -449,7 +449,7 @@ static void inbox_received_handler(DictionaryIterator *iter, void *context) {
         global_config.showtriangle,
         global_config.battery,
         global_config.bluetooth,
-        global_config.hourly
+        global_config.hourly,
         global_config.cleanface
     );
     APP_LOG (APP_LOG_LEVEL_DEBUG, "white %d, weather %d, f %d,p %d, date %d, loc %d",
@@ -584,7 +584,7 @@ static void init_config() {
                 global_config.showtriangle,
                 global_config.battery,
                 global_config.bluetooth,
-                global_config.hourly
+                global_config.hourly,
                 global_config.cleanface
             );
             APP_LOG (APP_LOG_LEVEL_DEBUG, "white %d, weather %d, f %d,p %d, date %d, loc %d",
@@ -622,7 +622,7 @@ static void init_config() {
                 global_config.showtriangle,
                 global_config.battery,
                 global_config.bluetooth,
-                global_config.hourly
+                global_config.hourly,
                 global_config.cleanface
             );
             APP_LOG (APP_LOG_LEVEL_DEBUG, "white %d, weather %d, f %d,p %d, date %d, loc %d",
