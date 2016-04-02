@@ -78,16 +78,18 @@ static void bg_update_proc(Layer *layer, GContext *ctx) {
         gpath_draw_outline(ctx, s_triangle);
     }
 
-    graphics_context_set_fill_color(ctx, s_forground_color);
-    for (i = 0; i < NUM_CLOCK_TICKS_WHITE; ++i) {
-        gpath_move_to(s_tick_paths[i], GPoint(x_offset, y_offset));
-        gpath_draw_filled(ctx, s_tick_paths[i]);
-    }
-    
-    graphics_context_set_fill_color(ctx, COLOR_FALLBACK(GColorRed,s_forground_color));
-    for (; i < NUM_CLOCK_TICKS_RED; ++i) {
-        gpath_move_to(s_tick_paths[i], GPoint(x_offset, y_offset));
-        gpath_draw_filled(ctx, s_tick_paths[i]);
+    if (!global_config.cleanface) {
+        graphics_context_set_fill_color(ctx, s_forground_color);
+        for (i = 0; i < NUM_CLOCK_TICKS_WHITE; ++i) {
+            gpath_move_to(s_tick_paths[i], GPoint(x_offset, y_offset));
+            gpath_draw_filled(ctx, s_tick_paths[i]);
+        }
+        
+        graphics_context_set_fill_color(ctx, COLOR_FALLBACK(GColorRed,s_forground_color));
+        for (; i < NUM_CLOCK_TICKS_RED; ++i) {
+            gpath_move_to(s_tick_paths[i], GPoint(x_offset, y_offset));
+            gpath_draw_filled(ctx, s_tick_paths[i]);
+        }
     }
 }
 
@@ -422,7 +424,13 @@ static void inbox_received_handler(DictionaryIterator *iter, void *context) {
                 APP_LOG (APP_LOG_LEVEL_DEBUG,"INFO: Hourly Changed %d",t->value->int8);
 #endif
                 global_config.hourly = t->value->int8;
-                break;                
+                break;
+            case KEY_CLEANFACE:
+#ifdef DO_DEBUG_LOGS
+                APP_LOG (APP_LOG_LEVEL_DEBUG,"INFO: Clean Face %d",t->value->int8);
+#endif
+                global_config.cleanface = t->value->int8;
+                break;               
             case KEY_SHOWLOCATION:
 #ifdef DO_DEBUG_LOGS
                 APP_LOG (APP_LOG_LEVEL_DEBUG,"INFO: ShowLocation Changed %d",t->value->int8);
@@ -435,13 +443,14 @@ static void inbox_received_handler(DictionaryIterator *iter, void *context) {
   
 #ifdef DO_DEBUG_LOGS
     APP_LOG (APP_LOG_LEVEL_DEBUG,"AppMessage : year - %d, month - %d, - day %d", (int)global_config.year, global_config.month, global_config.day);
-    APP_LOG (APP_LOG_LEVEL_DEBUG, "Seconds %d, format %d, triangle %d, battery %d, bluetooth %d, hourly %d",
+    APP_LOG (APP_LOG_LEVEL_DEBUG, "Seconds %d, format %d, triangle %d, battery %d, bluetooth %d, hourly %d, cleanface %d",
         global_config.showseconds,
         (int)global_config.countformat,
         global_config.showtriangle,
         global_config.battery,
         global_config.bluetooth,
         global_config.hourly
+        global_config.cleanface
     );
     APP_LOG (APP_LOG_LEVEL_DEBUG, "white %d, weather %d, f %d,p %d, date %d, loc %d",
         global_config.white,
@@ -569,13 +578,14 @@ static void init_config() {
 
 #ifdef DO_DEBUG_LOGS
             APP_LOG (APP_LOG_LEVEL_DEBUG,"Read %d : year - %d, month - %d, - day %d",version, (int)global_config.year, global_config.month, global_config.day);
-            APP_LOG (APP_LOG_LEVEL_DEBUG, "Seconds %d, format %d, triangle %d, battery %d, bluetooth %d, hourly %d",
+            APP_LOG (APP_LOG_LEVEL_DEBUG, "Seconds %d, format %d, triangle %d, battery %d, bluetooth %d, hourly %d, cleanface %d",
                 global_config.showseconds,
                 (int)global_config.countformat,
                 global_config.showtriangle,
                 global_config.battery,
                 global_config.bluetooth,
                 global_config.hourly
+                global_config.cleanface
             );
             APP_LOG (APP_LOG_LEVEL_DEBUG, "white %d, weather %d, f %d,p %d, date %d, loc %d",
                 global_config.white,
@@ -603,15 +613,17 @@ static void init_config() {
             global_config.showdate = 1;
             global_config.showlocation = 1;
             global_config.hourly = 1;
+            global_config.cleanface = 1;
 #ifdef DO_DEBUG_LOGS
             APP_LOG (APP_LOG_LEVEL_DEBUG,"Set Old version: %d year - %d, month - %d, - day %d", version,(int)global_config.year, global_config.month, global_config.day);
-            APP_LOG (APP_LOG_LEVEL_DEBUG, "Seconds %d, format %d, triangle %d, battery %d, bluetooth %d, hourly %d",
+            APP_LOG (APP_LOG_LEVEL_DEBUG, "Seconds %d, format %d, triangle %d, battery %d, bluetooth %d, hourly %d, cleanface %d",
                 global_config.showseconds,
                 (int)global_config.countformat,
                 global_config.showtriangle,
                 global_config.battery,
                 global_config.bluetooth,
                 global_config.hourly
+                global_config.cleanface
             );
             APP_LOG (APP_LOG_LEVEL_DEBUG, "white %d, weather %d, f %d,p %d, date %d, loc %d",
                 global_config.white,

@@ -29,6 +29,7 @@ struct dayface_config {
     uint8_t showdate;
     uint8_t showlocation;
     uint8_t hourly; /*hourly reminder*/
+    uint8_t cleanface;
 } __attribute__((__packed__)) global_config;
 
 #define WEATHER_POLL_DIV 15
@@ -63,6 +64,7 @@ static const uint32_t const segments[] = { 200, 400, 200, 400, 200 };
 #define KEY_SHOWDATE        12
 #define KEY_SHOWLOCATION    13
 #define KEY_HOURLY          14
+#define KEY_CLEANFACE       15
 #define KEY_TEMPERATURE     20
 #define KEY_CONDITIONS      21
 #define KEY_LOCATION        22
