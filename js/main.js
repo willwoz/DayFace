@@ -28,6 +28,7 @@ function getAndStoreConfigData() {
     var $showdateCheckBox = $('#showdateCheckBox');
     var $showlocationCheckBox = $('#showlocationCheckBox');
     var $hourlyCheckBox = $('#hourlyCheckBox');
+    var $cleanfaceCheckBox = $('#cleanfaceCheckBox');
     
   var options = {
     countfrom: $countfromDate.val(),
@@ -43,6 +44,7 @@ function getAndStoreConfigData() {
     showdate : $showdateCheckBox[0].checked,
     showlocation : $showlocationCheckBox[0].checked,
     hourly : $hourlyCheckBox[0].checked
+    cleanface : $cleanfaceCheckBox[0].checked
   };
 
     localStorage.countfrom = options.countfrom;
@@ -58,6 +60,7 @@ function getAndStoreConfigData() {
     localStorage.showdate = options.showdate;
     localStorage.showlocation = options.showlocation;
     localStorage.hourly = options.hourly;
+    localStorage.cleanface = options.cleanface;
 //    console.log('Got options main.js: ' + JSON.stringify(options));
     return options;
 }
@@ -77,6 +80,7 @@ function loadOptions() {
     var $showdateCheckBox = $('#showdateCheckBox');
     var $showlocationCheckBox = $('#showlocationCheckBox');
     var $hourlyCheckBox = $('#hourlyCheckBox');
+    var $cleanfaceCheckBox = $('#cleanfaceCheckBox');
 
     if (localStorage.countfrom) {
         $countfromDate[0].value = localStorage.countfrom;
@@ -93,6 +97,8 @@ function loadOptions() {
         $showdateCheckBox[0].checked = (localStorage.showdate === 'true');
         $showlocationCheckBox[0].checked = (localStorage.showlocation === 'true');
         $hourlyCheckBox[0].checked = (localStorage.hourly === 'true');
+        $cleanfaceCheckBox[0].checked = (localStorage.cleanface === 'true');
+        
     }
 }
 
