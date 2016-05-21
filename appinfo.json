@@ -18,7 +18,9 @@
         "showlocation": 13,
 	"hourly": 14,
 	"cleanface": 15,
-        "currlocation": 22
+        "currlocation": 22,
+        "analogue": 16,
+        "digital": 17
     },
     "capabilities": [ "configurable", "location" ],
     "companyName": "Leftside Design",
@@ -35,7 +37,7 @@
         "chalk"
     ],
     "uuid": "9c9fdbbe-a33a-48f1-bd6a-345a655ebb9f",
-    "versionLabel": "3.01",
+    "versionLabel": "4.00",
     "watchapp": {
         "watchface": true
     }
