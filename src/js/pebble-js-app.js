@@ -106,7 +106,9 @@ Pebble.addEventListener('webviewclosed', function(e) {
             showdate: configData.showdate,
             showlocation: configData.showlocation,
             hourly: configData.hourly,
-            cleanface: configData.cleanface
+            cleanface: configData.cleanface,
+            analogue: configData.showanalogue,
+            digital: configData.showdigital
         }, function(e) {
             console.log('Send successful!');
         }, function(e) {

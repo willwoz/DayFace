@@ -442,24 +442,26 @@ static void inbox_received_handler(DictionaryIterator *iter, void *context) {
 
   
 #ifdef DO_DEBUG_LOGS
-    APP_LOG (APP_LOG_LEVEL_DEBUG,"AppMessage : year - %d, month - %d, - day %d", (int)global_config.year, global_config.month, global_config.day);
-    APP_LOG (APP_LOG_LEVEL_DEBUG, "Seconds %d, format %d, triangle %d, battery %d, bluetooth %d, hourly %d, cleanface %d",
-        global_config.showseconds,
-        (int)global_config.countformat,
-        global_config.showtriangle,
-        global_config.battery,
-        global_config.bluetooth,
-        global_config.hourly,
-        global_config.cleanface
-    );
-    APP_LOG (APP_LOG_LEVEL_DEBUG, "white %d, weather %d, f %d,p %d, date %d, loc %d",
-        global_config.white,
-        global_config.showweather,
-        global_config.showfahrenheit,
-        global_config.weatherpoll,
-        global_config.showdate,
-        global_config.showlocation
-        );  
+            APP_LOG (APP_LOG_LEVEL_DEBUG,"year - %d, month - %d, - day %d", (int)global_config.year, global_config.month, global_config.day);
+            APP_LOG (APP_LOG_LEVEL_DEBUG, "Seconds %d, format %d, triangle %d, battery %d, bluetooth %d, hourly %d, cleanface %d, ana/digital %d/%d",
+                global_config.showseconds,
+                (int)global_config.countformat,
+                global_config.showtriangle,
+                global_config.battery,
+                global_config.bluetooth,
+                global_config.hourly,
+                global_config.cleanface,
+                global_config.showanalogue,
+                global_config.showdigital
+            );
+            APP_LOG (APP_LOG_LEVEL_DEBUG, "white %d, weather %d, f %d,p %d, date %d, loc %d",
+                global_config.white,
+                global_config.showweather,
+                global_config.showfahrenheit,
+                global_config.weatherpoll,
+                global_config.showdate,
+                global_config.showlocation
+                );  
 #endif
     
     then.tm_year = global_config.year - 1900;
@@ -482,7 +484,7 @@ static void window_load(Window *window) {
     layer_set_update_proc(s_simple_bg_layer, bg_update_proc);
     layer_add_child(window_layer, s_simple_bg_layer);
     
-    s_bt_layer = layer_create(GRect(((bounds.size.w*13)/18)-10, centre.y-10, 21, 21));
+    s_bt_layer = layer_create(GRect(((bounds.size.w*16)/18)-5, centre.y-10, 21, 21));
 //    bitmap_layer_set_bitmap(s_bt_icon_layer, s_bt_icon_bitmap);
     layer_set_update_proc(s_bt_layer, bt_update_proc);
     layer_add_child(window_layer, s_bt_layer);
@@ -527,14 +529,14 @@ static void window_load(Window *window) {
     layer_add_child(s_date_layer, text_layer_get_layer(s_weather_label));
     layer_set_hidden(text_layer_get_layer(s_weather_label),(global_config.showweather == 0));
    
-    s_battery_label = text_layer_create(GRect(((bounds.size.w*5)/18)-30, centre.y-10, 61, 21));
+    s_battery_label = text_layer_create(GRect(((bounds.size.w*3)/18)-35, centre.y-10, 451, 21));
     text_layer_set_text_alignment(s_battery_label,GTextAlignmentCenter);
     text_layer_set_text(s_battery_label, s_battery_buffer);
     text_layer_set_background_color(s_battery_label,s_background_color);
     text_layer_set_text_color(s_battery_label, s_forground_color);
     text_layer_set_font(s_battery_label, fonts_get_system_font(FONT_KEY_GOTHIC_14));
     layer_add_child(s_date_layer, text_layer_get_layer(s_battery_label));
-   layer_set_hidden(text_layer_get_layer(s_battery_label),!((global_config.battery == 1) || (charge_percent <= LOW_BATTERY)));
+    layer_set_hidden(text_layer_get_layer(s_battery_label),!((global_config.battery == 1) || (charge_percent <= LOW_BATTERY)));
  
     s_hands_layer = layer_create(bounds);
     
@@ -577,15 +579,17 @@ static void init_config() {
             persist_read_data (KEY_STRUCTURE,&global_config,sizeof(global_config));
 
 #ifdef DO_DEBUG_LOGS
-            APP_LOG (APP_LOG_LEVEL_DEBUG,"Read %d : year - %d, month - %d, - day %d",version, (int)global_config.year, global_config.month, global_config.day);
-            APP_LOG (APP_LOG_LEVEL_DEBUG, "Seconds %d, format %d, triangle %d, battery %d, bluetooth %d, hourly %d, cleanface %d",
+            APP_LOG (APP_LOG_LEVEL_DEBUG,"Set Old version: %d year - %d, month - %d, - day %d", version,(int)global_config.year, global_config.month, global_config.day);
+            APP_LOG (APP_LOG_LEVEL_DEBUG, "Seconds %d, format %d, triangle %d, battery %d, bluetooth %d, hourly %d, cleanface %d, ana/digital %d/%d",
                 global_config.showseconds,
                 (int)global_config.countformat,
                 global_config.showtriangle,
                 global_config.battery,
                 global_config.bluetooth,
                 global_config.hourly,
-                global_config.cleanface
+                global_config.cleanface,
+                global_config.showanalogue,
+                global_config.showdigital
             );
             APP_LOG (APP_LOG_LEVEL_DEBUG, "white %d, weather %d, f %d,p %d, date %d, loc %d",
                 global_config.white,
@@ -614,16 +618,21 @@ static void init_config() {
             global_config.showlocation = 1;
             global_config.hourly = 1;
             global_config.cleanface = 1;
+            global_config.showanalogue = 1;
+            global_config.showdigital = 0;
+            
 #ifdef DO_DEBUG_LOGS
             APP_LOG (APP_LOG_LEVEL_DEBUG,"Set Old version: %d year - %d, month - %d, - day %d", version,(int)global_config.year, global_config.month, global_config.day);
-            APP_LOG (APP_LOG_LEVEL_DEBUG, "Seconds %d, format %d, triangle %d, battery %d, bluetooth %d, hourly %d, cleanface %d",
+            APP_LOG (APP_LOG_LEVEL_DEBUG, "Seconds %d, format %d, triangle %d, battery %d, bluetooth %d, hourly %d, cleanface %d, ana/digital %d/%d",
                 global_config.showseconds,
                 (int)global_config.countformat,
                 global_config.showtriangle,
                 global_config.battery,
                 global_config.bluetooth,
                 global_config.hourly,
-                global_config.cleanface
+                global_config.cleanface,
+                global_config.showanalogue,
+                global_config.showdigital
             );
             APP_LOG (APP_LOG_LEVEL_DEBUG, "white %d, weather %d, f %d,p %d, date %d, loc %d",
                 global_config.white,
