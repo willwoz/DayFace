@@ -27,7 +27,14 @@
     "longName": "DayFace",
     "projectType": "native",
     "resources": {
-        "media": []
+        "media": [
+            {
+                "characterRegex": "[:0-9]",
+                "type": "font",
+                "name": "DSDIGIT_36",
+                "file": "DS-DIGIT.TTF"
+            }
+        ]
     },
     "sdkVersion": "3",
     "shortName": "DayFace",
@@ -37,7 +44,7 @@
         "chalk"
     ],
     "uuid": "9c9fdbbe-a33a-48f1-bd6a-345a655ebb9f",
-    "versionLabel": "3.01",
+    "versionLabel": "4.0",
     "watchapp": {
         "watchface": true
     }

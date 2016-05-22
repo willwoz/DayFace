@@ -3,7 +3,7 @@
 
 static Window *s_window;
 static Layer *s_simple_bg_layer, *s_date_layer, *s_hands_layer, *s_bt_layer;
-static TextLayer *s_date_label, *s_count_label, *s_battery_label, *s_weather_label, *s_loc_label;
+static TextLayer *s_date_label, *s_count_label, *s_battery_label, *s_weather_label, *s_loc_label,*s_digital_label;
 
 static GPath *s_tick_paths[NUM_CLOCK_TICKS];
 static GPath *s_minute_arrow, *s_hour_arrow;
@@ -11,7 +11,9 @@ static GPath *s_triangle,*s_bt_path;
 
 static GColor s_background_color,s_forground_color,s_battery_color;
 
-static char s_num_buffer[4], s_day_buffer[6], s_count_buffer[14], s_date_buffer[10],s_battery_buffer[5], s_weather_buffer[20], s_location_buffer[15];
+static GFont time_font;
+
+static char s_num_buffer[4], s_day_buffer[6], s_count_buffer[14], s_date_buffer[10],s_digital_buffer[9],s_battery_buffer[5], s_weather_buffer[20], s_location_buffer[15];
 
 static struct tm then;
 static int s_current_temp;
@@ -58,6 +60,11 @@ static void update_text_layers() {
     text_layer_set_background_color(s_weather_label,s_background_color);
     text_layer_set_text_color(s_weather_label, s_forground_color);
     layer_set_hidden(text_layer_get_layer(s_weather_label),(global_config.showweather == 0));
+    
+    text_layer_set_background_color(s_digital_label,s_background_color);
+    text_layer_set_text_color(s_digital_label, s_forground_color);
+    layer_set_hidden(text_layer_get_layer(s_digital_label),(global_config.showdigital == 0));
+   
 }
     
 
@@ -145,6 +152,14 @@ static void hands_update_proc(Layer *layer, GContext *ctx) {
         graphics_context_set_fill_color(ctx, s_background_color);
         graphics_fill_rect(ctx, GRect(bounds.size.w / 2 - 1, bounds.size.h / 2 - 1, 3, 3), 0, GCornerNone);
 
+    }
+    if (global_config.showdigital == 1)
+    {
+        if (global_config.showseconds == 1) {
+            snprintf (s_digital_buffer,sizeof(s_digital_buffer),"%d:%02d:%02d",t->tm_hour%12,t->tm_min,t->tm_sec);
+        } else {
+            snprintf (s_digital_buffer,sizeof(s_digital_buffer),"%d:%02d",t->tm_hour%12,t->tm_min);
+        }
     }
 }
 
@@ -456,28 +471,28 @@ static void inbox_received_handler(DictionaryIterator *iter, void *context) {
     }
 
   
-#ifdef DO_DEBUG_LOGS
-            APP_LOG (APP_LOG_LEVEL_DEBUG,"year - %d, month - %d, - day %d", (int)global_config.year, global_config.month, global_config.day);
-            APP_LOG (APP_LOG_LEVEL_DEBUG, "Seconds %d, format %d, triangle %d, battery %d, bluetooth %d, hourly %d, cleanface %d, ana/digital %d/%d",
-                global_config.showseconds,
-                (int)global_config.countformat,
-                global_config.showtriangle,
-                global_config.battery,
-                global_config.bluetooth,
-                global_config.hourly,
-                global_config.cleanface,
-                global_config.showanalogue,
-                global_config.showdigital
-            );
-            APP_LOG (APP_LOG_LEVEL_DEBUG, "white %d, weather %d, f %d,p %d, date %d, loc %d",
-                global_config.white,
-                global_config.showweather,
-                global_config.showfahrenheit,
-                global_config.weatherpoll,
-                global_config.showdate,
-                global_config.showlocation
-                );  
-#endif
+// #ifdef DO_DEBUG_LOGS
+//             APP_LOG (APP_LOG_LEVEL_DEBUG,"Config Handle: year - %d, month - %d, - day %d", (int)global_config.year, global_config.month, global_config.day);
+//             APP_LOG (APP_LOG_LEVEL_DEBUG, "Seconds %d, format %d, triangle %d, battery %d, bluetooth %d, hourly %d, cleanface %d, ana/digital %d/%d",
+//                 global_config.showseconds,
+//                 (int)global_config.countformat,
+//                 global_config.showtriangle,
+//                 global_config.battery,
+//                 global_config.bluetooth,
+//                 global_config.hourly,
+//                 global_config.cleanface,
+//                 global_config.showanalogue,
+//                 global_config.showdigital
+//             );
+//             APP_LOG (APP_LOG_LEVEL_DEBUG, "white %d, weather %d, f %d,p %d, date %d, loc %d",
+//                 global_config.white,
+//                 global_config.showweather,
+//                 global_config.showfahrenheit,
+//                 global_config.weatherpoll,
+//                 global_config.showdate,
+//                 global_config.showlocation
+//                 );  
+// #endif
     
     then.tm_year = global_config.year - 1900;
     then.tm_mon = global_config.month -1;
@@ -553,6 +568,15 @@ static void window_load(Window *window) {
     layer_add_child(s_date_layer, text_layer_get_layer(s_battery_label));
     layer_set_hidden(text_layer_get_layer(s_battery_label),!((global_config.battery == 1) || (charge_percent <= LOW_BATTERY)));
  
+    s_digital_label = text_layer_create(GRect(((bounds.size.w*3)/18), centre.y-20, 130, 41));
+    text_layer_set_text_alignment(s_digital_label,GTextAlignmentCenter);
+    text_layer_set_text(s_digital_label, s_digital_buffer);
+    text_layer_set_background_color(s_digital_label,s_background_color);
+    text_layer_set_text_color(s_digital_label, s_forground_color);
+    text_layer_set_font(s_digital_label, time_font);
+    layer_add_child(s_date_layer, text_layer_get_layer(s_digital_label));
+    layer_set_hidden(text_layer_get_layer(s_digital_label),(global_config.showdigital == 0));
+
     s_hands_layer = layer_create(bounds);
     
 
@@ -577,6 +601,7 @@ static void window_unload(Window *window) {
   text_layer_destroy(s_count_label);
   text_layer_destroy(s_battery_label);
   text_layer_destroy(s_weather_label);
+  text_layer_destroy(s_digital_label);
   
 //  gbitmap_destroy(s_bt_icon_bitmap);
 //  bitmap_layer_destroy(s_bt_icon_layer);
@@ -588,6 +613,10 @@ static void window_unload(Window *window) {
 static void init_config() {
     int version = persist_read_int(STORAGE_VERSION_KEY);
     
+#ifdef DO_DEBUG_LOGS
+            APP_LOG (APP_LOG_LEVEL_DEBUG,"Config Init : Version %d", version);
+#endif
+
     switch (version) {
         case STORAGE_VERSION :
             /* CUrrent version of config */
@@ -637,7 +666,7 @@ static void init_config() {
             global_config.showdigital = 0;
             
 #ifdef DO_DEBUG_LOGS
-            APP_LOG (APP_LOG_LEVEL_DEBUG,"Set Old version: %d year - %d, month - %d, - day %d", version,(int)global_config.year, global_config.month, global_config.day);
+            APP_LOG (APP_LOG_LEVEL_DEBUG,"Set New version: %d year - %d, month - %d, - day %d", version,(int)global_config.year, global_config.month, global_config.day);
             APP_LOG (APP_LOG_LEVEL_DEBUG, "Seconds %d, format %d, triangle %d, battery %d, bluetooth %d, hourly %d, cleanface %d, ana/digital %d/%d",
                 global_config.showseconds,
                 (int)global_config.countformat,
@@ -673,7 +702,13 @@ static void init_config() {
 }
 
 static void init() {
+    
+//     resource_init_current_app(&APP_RESOURCES);
+    init_config();
+    
     s_window = window_create();
+    time_font = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_DSDIGIT_36));
+
     window_set_window_handlers(s_window, (WindowHandlers) {
         .load = window_load,
         .unload = window_unload,
@@ -684,8 +719,9 @@ static void init() {
     s_num_buffer[0] = '\0';
     s_count_buffer[0] = '\0';
     s_battery_buffer[0] = '\0';
+    s_digital_buffer[0] = '\0';
     
-    init_config();
+    
     update_weather(NULL);
     update_counter (NULL);
  
