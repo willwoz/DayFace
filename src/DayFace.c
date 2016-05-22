@@ -115,32 +115,37 @@ static void hands_update_proc(Layer *layer, GContext *ctx) {
     time_t now = time(NULL);
     struct tm *t = localtime(&now);
     int32_t second_angle = TRIG_MAX_ANGLE * t->tm_sec / 60;
-    GPoint second_hand = {
-        .x = (int16_t)(sin_lookup(second_angle) * (int32_t)second_hand_length / TRIG_MAX_RATIO) + center.x,
-        .y = (int16_t)(-cos_lookup(second_angle) * (int32_t)second_hand_length / TRIG_MAX_RATIO) + center.y,
-    };
+    
+    if (global_config.showanalogue == 1)
+    {
+        GPoint second_hand = {
+            .x = (int16_t)(sin_lookup(second_angle) * (int32_t)second_hand_length / TRIG_MAX_RATIO) + center.x,
+            .y = (int16_t)(-cos_lookup(second_angle) * (int32_t)second_hand_length / TRIG_MAX_RATIO) + center.y,
+        };
 
-  // second hand
-    if (global_config.showseconds == 1) {
-        graphics_context_set_stroke_color(ctx, COLOR_FALLBACK(GColorRed,s_forground_color));
-        graphics_draw_line(ctx, second_hand, center);
+    // second hand
+        if (global_config.showseconds == 1) {
+            graphics_context_set_stroke_color(ctx, COLOR_FALLBACK(GColorRed,s_forground_color));
+            graphics_draw_line(ctx, second_hand, center);
+        }
+
+    // minute/hour hand
+        graphics_context_set_fill_color(ctx, s_forground_color);
+        graphics_context_set_stroke_color(ctx, s_background_color);
+
+        gpath_rotate_to(s_minute_arrow, TRIG_MAX_ANGLE * t->tm_min / 60);
+        gpath_draw_filled(ctx, s_minute_arrow);
+        gpath_draw_outline(ctx, s_minute_arrow);
+
+        gpath_rotate_to(s_hour_arrow, (TRIG_MAX_ANGLE * (((t->tm_hour % 12) * 6) + (t->tm_min / 10))) / (12 * 6));
+        gpath_draw_filled(ctx, s_hour_arrow);
+        gpath_draw_outline(ctx, s_hour_arrow);
+
+        // dot in the middle
+        graphics_context_set_fill_color(ctx, s_background_color);
+        graphics_fill_rect(ctx, GRect(bounds.size.w / 2 - 1, bounds.size.h / 2 - 1, 3, 3), 0, GCornerNone);
+
     }
-
-  // minute/hour hand
-    graphics_context_set_fill_color(ctx, s_forground_color);
-    graphics_context_set_stroke_color(ctx, s_background_color);
-
-    gpath_rotate_to(s_minute_arrow, TRIG_MAX_ANGLE * t->tm_min / 60);
-    gpath_draw_filled(ctx, s_minute_arrow);
-    gpath_draw_outline(ctx, s_minute_arrow);
-
-    gpath_rotate_to(s_hour_arrow, (TRIG_MAX_ANGLE * (((t->tm_hour % 12) * 6) + (t->tm_min / 10))) / (12 * 6));
-    gpath_draw_filled(ctx, s_hour_arrow);
-    gpath_draw_outline(ctx, s_hour_arrow);
-
-    // dot in the middle
-    graphics_context_set_fill_color(ctx, s_background_color);
-    graphics_fill_rect(ctx, GRect(bounds.size.w / 2 - 1, bounds.size.h / 2 - 1, 3, 3), 0, GCornerNone);
 }
 
 static int day_number (int y,int m,int d) {
@@ -436,6 +441,16 @@ static void inbox_received_handler(DictionaryIterator *iter, void *context) {
                 APP_LOG (APP_LOG_LEVEL_DEBUG,"INFO: ShowLocation Changed %d",t->value->int8);
 #endif
                 global_config.showlocation = t->value->int8;
+            case KEY_ANALOGUE:
+#ifdef DO_DEBUG_LOGS
+                APP_LOG (APP_LOG_LEVEL_DEBUG,"INFO: ShowaNALOGUE Changed %d",t->value->int8);
+#endif
+                global_config.showanalogue = t->value->int8;
+            case KEY_DIGITAL:
+#ifdef DO_DEBUG_LOGS
+                APP_LOG (APP_LOG_LEVEL_DEBUG,"INFO: ShowDigital Changed %d",t->value->int8);
+#endif
+                global_config.showdigital = t->value->int8;
         }
         t = dict_read_next(iter);
     }
@@ -529,7 +544,7 @@ static void window_load(Window *window) {
     layer_add_child(s_date_layer, text_layer_get_layer(s_weather_label));
     layer_set_hidden(text_layer_get_layer(s_weather_label),(global_config.showweather == 0));
    
-    s_battery_label = text_layer_create(GRect(((bounds.size.w*3)/18)-35, centre.y-10, 451, 21));
+    s_battery_label = text_layer_create(GRect(((bounds.size.w*3)/18)-35, centre.y-10, 41, 21));
     text_layer_set_text_alignment(s_battery_label,GTextAlignmentCenter);
     text_layer_set_text(s_battery_label, s_battery_buffer);
     text_layer_set_background_color(s_battery_label,s_background_color);
@@ -715,8 +730,8 @@ static void init() {
     app_message_register_inbox_dropped(inbox_dropped_callback);
     app_message_register_outbox_failed(outbox_failed_callback);
     app_message_register_outbox_sent(outbox_sent_callback); 
-//     app_message_open(app_message_inbox_size_maximum(), app_message_outbox_size_maximum());
-    app_message_open(256,256);
+     app_message_open(app_message_inbox_size_maximum(), app_message_outbox_size_maximum());
+//    app_message_open(256,256);
 }
 
 static void deinit() {
