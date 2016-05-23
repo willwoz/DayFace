@@ -2,10 +2,11 @@
 
 #include "pebble.h"
 
-#define DO_DEBUG_LOGS
+// #define DO_DEBUG_LOGS
+// #define DO_FULL_LOGS
 
 #define STORAGE_VERSION_KEY    99
-#define STORAGE_VERSION        5
+#define STORAGE_VERSION        2
 
 #define LOW_BATTERY     10
 
@@ -16,6 +17,7 @@
 struct dayface_config {
     uint32_t year;
     uint32_t countformat;  /*days,months,year?*/
+    uint32_t digitalcolor;
     uint8_t day;
     uint8_t month;
     uint8_t showseconds; /*show seconds*/
@@ -69,11 +71,16 @@ static const uint32_t const segments[] = { 200, 400, 200, 400, 200 };
 #define KEY_CLEANFACE       15
 #define KEY_ANALOGUE        16
 #define KEY_DIGITAL         17
+#define KEY_DIGITALCOLOR    18
 #define KEY_TEMPERATURE     20
 #define KEY_CONDITIONS      21
 #define KEY_LOCATION        22
 
 #define KEY_TOTAL_KEYS      22
+
+static const uint32_t const digital_color[] = {
+    0xFFFFFF, 0xFFFFFF, 0x000000, 0xFF0000, 0x00FF00, 0x0000FF, 0xFFFF00, 0xFF00FF
+};
 
 static const struct GPathInfo ANALOG_BG_POINTS[] = {
   { 4, (GPoint []){ /*1*/

@@ -13,7 +13,7 @@ static GColor s_background_color,s_forground_color,s_battery_color;
 
 static GFont time_font;
 
-static char s_num_buffer[4], s_day_buffer[6], s_count_buffer[14], s_date_buffer[10],s_digital_buffer[9],s_battery_buffer[5], s_weather_buffer[20], s_location_buffer[15];
+static char s_num_buffer[4], s_day_buffer[6], s_count_buffer[14], s_date_buffer[10],s_digital_buffer[10],s_battery_buffer[5], s_weather_buffer[20], s_location_buffer[15];
 
 static struct tm then;
 static int s_current_temp;
@@ -62,7 +62,7 @@ static void update_text_layers() {
     layer_set_hidden(text_layer_get_layer(s_weather_label),(global_config.showweather == 0));
     
     text_layer_set_background_color(s_digital_label,s_background_color);
-    text_layer_set_text_color(s_digital_label, s_forground_color);
+    text_layer_set_text_color(s_digital_label, GColorFromHEX(digital_color[global_config.digitalcolor]));
     layer_set_hidden(text_layer_get_layer(s_digital_label),(global_config.showdigital == 0));
    
 }
@@ -117,12 +117,14 @@ static void hands_update_proc(Layer *layer, GContext *ctx) {
 
     s_background_color = ((global_config.white == 0) ? GColorBlack : GColorWhite);
     s_forground_color = ((global_config.white == 0) ? GColorWhite : GColorBlack);
-    update_text_layers();
  
     time_t now = time(NULL);
     struct tm *t = localtime(&now);
     int32_t second_angle = TRIG_MAX_ANGLE * t->tm_sec / 60;
     
+#ifdef DO_FULL_LOGS
+    APP_LOG(APP_LOG_LEVEL_DEBUG,"Tick-Tock analogue %d - Digital %d",global_config.showanalogue, global_config.showdigital);
+#endif
     if (global_config.showanalogue == 1)
     {
         GPoint second_hand = {
@@ -153,14 +155,16 @@ static void hands_update_proc(Layer *layer, GContext *ctx) {
         graphics_fill_rect(ctx, GRect(bounds.size.w / 2 - 1, bounds.size.h / 2 - 1, 3, 3), 0, GCornerNone);
 
     }
+    
     if (global_config.showdigital == 1)
     {
         if (global_config.showseconds == 1) {
-            snprintf (s_digital_buffer,sizeof(s_digital_buffer),"%d:%02d:%02d",t->tm_hour%12,t->tm_min,t->tm_sec);
+            snprintf (s_digital_buffer,sizeof(s_digital_buffer),"%2d:%02d:%02d",t->tm_hour%12,t->tm_min,t->tm_sec);
         } else {
-            snprintf (s_digital_buffer,sizeof(s_digital_buffer),"%d:%02d",t->tm_hour%12,t->tm_min);
+            snprintf (s_digital_buffer,sizeof(s_digital_buffer),"%2d:%02d %sM",t->tm_hour%12,t->tm_min,(t->tm_hour<12?"A":"P"));
         }
     }
+    update_text_layers();
 }
 
 static int day_number (int y,int m,int d) {
@@ -230,7 +234,7 @@ static void date_update_proc(Layer *layer, GContext *ctx) {
 
     s_background_color = ((global_config.white == 0) ? GColorBlack : GColorWhite);
     s_forground_color = ((global_config.white == 0) ? GColorWhite : GColorBlack);
-    update_text_layers();
+//     update_text_layers();
     
     strftime(s_date_buffer, sizeof(s_date_buffer), "%a %d", now);
     text_layer_set_text(s_date_label, s_date_buffer);
@@ -289,7 +293,7 @@ static void handle_second_tick(struct tm *tick_time, TimeUnits units_changed) {
         update_weather(tick_time);
     
     if (global_config.hourly == 1) {
-#ifdef DO_DEBUG_LOGS
+#ifdef DO_FULL_LOGS
         APP_LOG(APP_LOG_LEVEL_DEBUG,"hourly: %d - Minutes: %d",s_hourly_done,tick_time->tm_min);
 #endif
         if (tick_time->tm_min == SHAKE_TIME) {
@@ -456,16 +460,25 @@ static void inbox_received_handler(DictionaryIterator *iter, void *context) {
                 APP_LOG (APP_LOG_LEVEL_DEBUG,"INFO: ShowLocation Changed %d",t->value->int8);
 #endif
                 global_config.showlocation = t->value->int8;
+                break;
             case KEY_ANALOGUE:
 #ifdef DO_DEBUG_LOGS
                 APP_LOG (APP_LOG_LEVEL_DEBUG,"INFO: ShowaNALOGUE Changed %d",t->value->int8);
 #endif
                 global_config.showanalogue = t->value->int8;
+                break;
             case KEY_DIGITAL:
 #ifdef DO_DEBUG_LOGS
                 APP_LOG (APP_LOG_LEVEL_DEBUG,"INFO: ShowDigital Changed %d",t->value->int8);
 #endif
                 global_config.showdigital = t->value->int8;
+                break;
+            case KEY_DIGITALCOLOR:
+#ifdef DO_DEBUG_LOGS
+                APP_LOG (APP_LOG_LEVEL_DEBUG,"INFO: DigitalColor Changed %d",(int)t->value->int32);
+#endif
+                global_config.digitalcolor = t->value->int32;
+                break;
         }
         t = dict_read_next(iter);
     }
@@ -514,7 +527,7 @@ static void window_load(Window *window) {
     layer_set_update_proc(s_simple_bg_layer, bg_update_proc);
     layer_add_child(window_layer, s_simple_bg_layer);
     
-    s_bt_layer = layer_create(GRect(((bounds.size.w*16)/18)-5, centre.y-10, 21, 21));
+    s_bt_layer = layer_create(GRect(((bounds.size.w*14)/18), centre.y-50, 21, 21));
 //    bitmap_layer_set_bitmap(s_bt_icon_layer, s_bt_icon_bitmap);
     layer_set_update_proc(s_bt_layer, bt_update_proc);
     layer_add_child(window_layer, s_bt_layer);
@@ -559,7 +572,7 @@ static void window_load(Window *window) {
     layer_add_child(s_date_layer, text_layer_get_layer(s_weather_label));
     layer_set_hidden(text_layer_get_layer(s_weather_label),(global_config.showweather == 0));
    
-    s_battery_label = text_layer_create(GRect(((bounds.size.w*3)/18)-35, centre.y-10, 41, 21));
+    s_battery_label = text_layer_create(GRect(((bounds.size.w*1)/18), centre.y-50, 41, 21));
     text_layer_set_text_alignment(s_battery_label,GTextAlignmentCenter);
     text_layer_set_text(s_battery_label, s_battery_buffer);
     text_layer_set_background_color(s_battery_label,s_background_color);
@@ -568,11 +581,11 @@ static void window_load(Window *window) {
     layer_add_child(s_date_layer, text_layer_get_layer(s_battery_label));
     layer_set_hidden(text_layer_get_layer(s_battery_label),!((global_config.battery == 1) || (charge_percent <= LOW_BATTERY)));
  
-    s_digital_label = text_layer_create(GRect(((bounds.size.w*3)/18), centre.y-20, 130, 41));
+    s_digital_label = text_layer_create(GRect(((bounds.size.w*1)/18), centre.y-20, (bounds.size.w-((bounds.size.w*2)/18)), 41));
     text_layer_set_text_alignment(s_digital_label,GTextAlignmentCenter);
     text_layer_set_text(s_digital_label, s_digital_buffer);
     text_layer_set_background_color(s_digital_label,s_background_color);
-    text_layer_set_text_color(s_digital_label, s_forground_color);
+    text_layer_set_text_color(s_digital_label, GColorFromHEX(digital_color[global_config.digitalcolor]));
     text_layer_set_font(s_digital_label, time_font);
     layer_add_child(s_date_layer, text_layer_get_layer(s_digital_label));
     layer_set_hidden(text_layer_get_layer(s_digital_label),(global_config.showdigital == 0));
@@ -664,6 +677,7 @@ static void init_config() {
             global_config.cleanface = 1;
             global_config.showanalogue = 1;
             global_config.showdigital = 0;
+            global_config.digitalcolor = 1;
             
 #ifdef DO_DEBUG_LOGS
             APP_LOG (APP_LOG_LEVEL_DEBUG,"Set New version: %d year - %d, month - %d, - day %d", version,(int)global_config.year, global_config.month, global_config.day);
@@ -707,7 +721,7 @@ static void init() {
     init_config();
     
     s_window = window_create();
-    time_font = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_DSDIGIT_36));
+    time_font = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_DIGITAL_24));
 
     window_set_window_handlers(s_window, (WindowHandlers) {
         .load = window_load,
@@ -771,13 +785,10 @@ static void init() {
 }
 
 static void deinit() {
-#ifdef DO_DEBUG_LOGS
     persist_write_int(STORAGE_VERSION_KEY,STORAGE_VERSION);
     int written = persist_write_data (KEY_STRUCTURE,&global_config,sizeof(global_config));
+#ifdef DO_DEBUG_LOGS
     APP_LOG (APP_LOG_LEVEL_DEBUG,"Wrote : %d, Size : %d",written,sizeof(global_config));
-#else
-    persist_write_int(STORAGE_VERSION_KEY,STORAGE_VERSION);
-    persist_write_data (KEY_STRUCTURE,&global_config,sizeof(global_config));
 #endif
    
     gpath_destroy(s_minute_arrow);

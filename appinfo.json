@@ -20,7 +20,8 @@
 	"cleanface": 15,
         "currlocation": 22,
         "analogue": 16,
-        "digital": 17
+        "digital": 17,
+        "digitalcolor": 18
     },
     "capabilities": [ "configurable", "location" ],
     "companyName": "Leftside Design",
@@ -29,17 +30,16 @@
     "resources": {
         "media": [
             {
-                "characterRegex": "[:0-9]",
+                "characterRegex": "[:0-9APM ]",
                 "type": "font",
-                "name": "DSDIGIT_36",
-                "file": "DS-DIGIT.TTF"
+                "name": "DIGITAL_24",
+                "file": "DigitaldreamNarrow.ttf"
             }
         ]
     },
     "sdkVersion": "3",
     "shortName": "DayFace",
     "targetPlatforms": [
-        "aplite",
         "basalt",
         "chalk"
     ],
