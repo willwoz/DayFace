@@ -19,6 +19,7 @@ function getAndStoreConfigData() {
     var $showsecondsCheckBox = $('#showsecondsCheckBox');
     var $showtriangleCheckBox = $('#showtriangleCheckBox');
     var $formatSelect = $('#formatSelect');
+    var $digitalcolorSelect = $('#digitalcolorSelect');
     var $batteryCheckBox = $('#batteryCheckBox');
     var $bluetoothCheckBox = $('#batteryCheckBox');
     var $whiteCheckBox = $('#whiteCheckBox');
@@ -29,6 +30,8 @@ function getAndStoreConfigData() {
     var $showlocationCheckBox = $('#showlocationCheckBox');
     var $hourlyCheckBox = $('#hourlyCheckBox');
     var $cleanfaceCheckBox = $('#cleanfaceCheckBox');
+    var $showanalogueCheckBox = $('#showanalogueCheckBox');
+    var $showdigitalCheckBox =$('#showdigitalCheckBox');
     
   var options = {
     countfrom: $countfromDate.val(),
@@ -44,9 +47,10 @@ function getAndStoreConfigData() {
     showdate : $showdateCheckBox[0].checked,
     showlocation : $showlocationCheckBox[0].checked,
     hourly : $hourlyCheckBox[0].checked,
-    cleanface : $cleanfaceCheckBox[0].checked
-    showanalogue : $showanalogueCheckBox[0].checked
-    showdigital : $showdigitalCheckBox[0].checked
+    cleanface : $cleanfaceCheckBox[0].checked,
+    showanalogue : $showanalogueCheckBox[0].checked,
+    showdigital : $showdigitalCheckBox[0].checked,
+    digitalcolor: $digitalcolorSelect.val()
   };
 
     localStorage.countfrom = options.countfrom;
@@ -65,7 +69,7 @@ function getAndStoreConfigData() {
     localStorage.cleanface = options.cleanface;
     localStorage.showanalogue = options.showanalogue;
     localStorage.showdigital = options.showdigital;
-    
+    localStorage.digitalcolor = options.digitalcolor;
     console.log('Got options main.js: ' + JSON.stringify(options));
     return options;
 }
@@ -75,6 +79,7 @@ function loadOptions() {
     var $showsecondsCheckBox = $('#showsecondsCheckBox');
     var $showtriangleCheckBox = $('#showtriangleCheckBox');
     var $formatSelect = $('#formatSelect');
+    var $digitalcolorSelect = $('#digitalcolorSelect');
     var $batteryCheckBox = $('#batteryCheckBox');
     var $bluetoothCheckBox = $('#batteryCheckBox');
     var $whiteCheckBox = $('#whiteCheckBox');
@@ -88,14 +93,13 @@ function loadOptions() {
     var $cleanfaceCheckBox = $('#cleanfaceCheckBox');
     var $showanalogueCheckBox = $('#showanalogueCheckBox');
     var $showdigitalCheckBox =$('#showdigitalCheckBox');
-    var $showanalogueCheckBox = $('#showanalogueCheckBox');
-    var $showdigitalCheckBox =$('#showdigitalCheckBox');
 
     if (localStorage.countfrom) {
         $countfromDate[0].value = localStorage.countfrom;
         $showsecondsCheckBox[0].checked = (localStorage.showseconds === 'true');
         $showtriangleCheckBox[0].checked = (localStorage.showtriangle === 'true');
         $formatSelect[0].value = localStorage.countformat;
+        $digitalcolorSelect[0].value = localStorage.digitalcolor;
         $batteryCheckBox[0].checked = (localStorage.battery === 'true');
         $bluetoothCheckBox[0].checked = (localStorage.bluetooth === 'true');
         $whiteCheckBox[0].checked = (localStorage.white === 'true');
@@ -107,8 +111,8 @@ function loadOptions() {
         $showlocationCheckBox[0].checked = (localStorage.showlocation === 'true');
         $hourlyCheckBox[0].checked = (localStorage.hourly === 'true');
         $cleanfaceCheckBox[0].checked = (localStorage.cleanface === 'true');
-        $showanalogueCheckBox[0].checked = (localStorage.cleanface === 'true');
-        $showdigitalCheckBox[0].checked = (localStorage.cleanface === 'true');
+        $showanalogueCheckBox[0].checked = (localStorage.showanalogue === 'true');
+        $showdigitalCheckBox[0].checked = (localStorage.showdigital === 'true');
     }
 }
 

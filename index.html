@@ -8,7 +8,7 @@
 </head>
 <body>
     <div class='item-container'>
-        <h1 class='title'>DayFace 3.0 Configuration</h1>
+        <h1 class='title'>DayFace 4.0 Configuration</h1>
     </div>
     
     <div class='item-container'>
@@ -32,28 +32,40 @@
         <div class='item-container-header'>Component Toggles</div>
         <div class='item-container-content'>
             <label class="item">
-                Show Date
-                <input id="showdateCheckBox" type="checkbox" class="item-toggle" checked>
-            </label>
-            <label class="item">
-                Show Seconds
-                <input id="showsecondsCheckBox" type="checkbox" class="item-toggle" checked>
-            </label>
-            <label class="item">
                 Show Analogue Face
                 <input id="showanalogueCheckBox" type="checkbox" class="item-toggle" checked>
+            </label>
+            <label class="item">
+                Clean Face
+                <input id="cleanfaceCheckBox" type="checkbox" class="item-toggle" unchecked>
             </label>
             <label class="item">
                 Show Digital Face
                 <input id="showdigitalCheckBox" type="checkbox" class="item-toggle" checked>
             </label>
             <label class="item">
-                Show Triangle
-                <input id="showtriangleCheckBox" type="checkbox" class="item-toggle" checked>
+                Digital Color
+                <select id="digitalcolorSelect" dir='rtl' class="item-select">
+                    <option class="item-select-option" value=1>White</option>
+                    <option class="item-select-option" value=2>Black</option>
+                    <option class="item-select-option" value=3>Red</option>
+                    <option class="item-select-option" value=4>Green</option>
+                    <option class="item-select-option" value=5>Blue</option>
+                    <option class="item-select-option" value=6>Yellow</option>
+                    <option class="item-select-option" value=7>Magenta</option>
+                </select>
             </label>
             <label class="item">
-                Clean Face
-                <input id="cleanfaceCheckBox" type="checkbox" class="item-toggle" unchecked>
+                Show Seconds
+                <input id="showsecondsCheckBox" type="checkbox" class="item-toggle" checked>
+            </label>
+            <label class="item">
+                Show Date
+                <input id="showdateCheckBox" type="checkbox" class="item-toggle" checked>
+            </label>
+            <label class="item">
+                Show Triangle
+                <input id="showtriangleCheckBox" type="checkbox" class="item-toggle" checked>
             </label>
             <label class="item">
                 Show Battery Meter
