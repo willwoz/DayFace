@@ -71,12 +71,12 @@ Pebble.addEventListener('ready',
 Pebble.addEventListener('appmessage', function(e) {
     console.log('AppMessage received');
     getWeather();
-})
+});
 
 
 Pebble.addEventListener('showConfiguration', function() {
 //    var url = 'https://willwoz.github.io/DayFace/';
-    var url = 'http://0756ea03.ngrok.io';
+    var url = 'https://c368600f.ngrok.io';
     
     console.log('Showing configuration page: ' + url);
 

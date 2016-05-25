@@ -159,9 +159,9 @@ static void hands_update_proc(Layer *layer, GContext *ctx) {
     if (global_config.showdigital == 1)
     {
         if (global_config.showseconds == 1) {
-            snprintf (s_digital_buffer,sizeof(s_digital_buffer),"%2d:%02d:%02d",t->tm_hour%12,t->tm_min,t->tm_sec);
+            snprintf (s_digital_buffer,sizeof(s_digital_buffer),"%2d:%02d:%02d",(t->tm_hour%12?t->tm_hour%12:12),t->tm_min,t->tm_sec);
         } else {
-            snprintf (s_digital_buffer,sizeof(s_digital_buffer),"%2d:%02d %sM",t->tm_hour%12,t->tm_min,(t->tm_hour<12?"A":"P"));
+            snprintf (s_digital_buffer,sizeof(s_digital_buffer),"%d:%02d %sM",(t->tm_hour%12?t->tm_hour%12:12),t->tm_min,(t->tm_hour<12?"A":"P"));
         }
     }
     update_text_layers();
@@ -780,11 +780,12 @@ static void init() {
     app_message_register_inbox_dropped(inbox_dropped_callback);
     app_message_register_outbox_failed(outbox_failed_callback);
     app_message_register_outbox_sent(outbox_sent_callback); 
-     app_message_open(app_message_inbox_size_maximum(), app_message_outbox_size_maximum());
-//    app_message_open(256,256);
+//     app_message_open(app_message_inbox_size_maximum(), app_message_outbox_size_maximum());
+    app_message_open(256,256);
 }
 
 static void deinit() {
+       
     persist_write_int(STORAGE_VERSION_KEY,STORAGE_VERSION);
     int written = persist_write_data (KEY_STRUCTURE,&global_config,sizeof(global_config));
 #ifdef DO_DEBUG_LOGS
