@@ -75,8 +75,8 @@ Pebble.addEventListener('appmessage', function(e) {
 
 
 Pebble.addEventListener('showConfiguration', function() {
-//    var url = 'https://willwoz.github.io/DayFace/';
-    var url = 'https://c368600f.ngrok.io';
+    var url = 'https://willwoz.github.io/DayFace/';
+//     var url = 'https://c368600f.ngrok.io';
     
     console.log('Showing configuration page: ' + url);
 

@@ -13,7 +13,7 @@ static GColor s_background_color,s_forground_color,s_battery_color;
 
 static GFont time_font;
 
-static char s_num_buffer[4], s_day_buffer[6], s_count_buffer[14], s_date_buffer[10],s_digital_buffer[10],s_battery_buffer[5], s_weather_buffer[20], s_location_buffer[15];
+static char s_num_buffer[4], s_day_buffer[6], s_count_buffer[16], s_date_buffer[10],s_digital_buffer[10],s_battery_buffer[5], s_weather_buffer[20], s_location_buffer[15];
 
 static struct tm then;
 static int s_current_temp;
@@ -64,7 +64,6 @@ static void update_text_layers() {
     text_layer_set_background_color(s_digital_label,s_background_color);
     text_layer_set_text_color(s_digital_label, GColorFromHEX(digital_color[global_config.digitalcolor]));
     layer_set_hidden(text_layer_get_layer(s_digital_label),(global_config.showdigital == 0));
-   
 }
     
 
@@ -123,48 +122,43 @@ static void hands_update_proc(Layer *layer, GContext *ctx) {
     int32_t second_angle = TRIG_MAX_ANGLE * t->tm_sec / 60;
     
 #ifdef DO_FULL_LOGS
-    APP_LOG(APP_LOG_LEVEL_DEBUG,"Tick-Tock analogue %d - Digital %d",global_config.showanalogue, global_config.showdigital);
+    APP_LOG(APP_LOG_LEVEL_DEBUG,"Tick-Tock H:%d M:%d S:%d - show_seconds %d - new_face %d",t->tm_hour,t->tm_min,t->tm_sec,global_config.showseconds,new_face);
 #endif
-    if (global_config.showanalogue == 1)
-    {
-        GPoint second_hand = {
-            .x = (int16_t)(sin_lookup(second_angle) * (int32_t)second_hand_length / TRIG_MAX_RATIO) + center.x,
-            .y = (int16_t)(-cos_lookup(second_angle) * (int32_t)second_hand_length / TRIG_MAX_RATIO) + center.y,
-        };
+//     if (new_face == 1 || global_config.showseconds == 1 || t->tm_sec == 0)
+//     {
+        new_face = 0;
+        if (global_config.showanalogue == 1)
+        {
+            GPoint second_hand = {
+                .x = (int16_t)(sin_lookup(second_angle) * (int32_t)second_hand_length / TRIG_MAX_RATIO) + center.x,
+                .y = (int16_t)(-cos_lookup(second_angle) * (int32_t)second_hand_length / TRIG_MAX_RATIO) + center.y,
+            };
 
-    // second hand
-        if (global_config.showseconds == 1) {
-            graphics_context_set_stroke_color(ctx, COLOR_FALLBACK(GColorRed,s_forground_color));
-            graphics_draw_line(ctx, second_hand, center);
+        // second hand
+            if (global_config.showseconds == 1) {
+                graphics_context_set_stroke_color(ctx, COLOR_FALLBACK(GColorRed,s_forground_color));
+                graphics_draw_line(ctx, second_hand, center);
+            }
+
+        // minute/hour hand
+            graphics_context_set_fill_color(ctx, s_forground_color);
+            graphics_context_set_stroke_color(ctx, s_background_color);
+
+            gpath_rotate_to(s_minute_arrow, TRIG_MAX_ANGLE * t->tm_min / 60);
+            gpath_draw_filled(ctx, s_minute_arrow);
+            gpath_draw_outline(ctx, s_minute_arrow);
+
+            gpath_rotate_to(s_hour_arrow, (TRIG_MAX_ANGLE * (((t->tm_hour % 12) * 6) + (t->tm_min / 10))) / (12 * 6));
+            gpath_draw_filled(ctx, s_hour_arrow);
+            gpath_draw_outline(ctx, s_hour_arrow);
+
+            // dot in the middle
+            graphics_context_set_fill_color(ctx, s_background_color);
+            graphics_fill_rect(ctx, GRect(bounds.size.w / 2 - 1, bounds.size.h / 2 - 1, 3, 3), 0, GCornerNone);
+
         }
-
-    // minute/hour hand
-        graphics_context_set_fill_color(ctx, s_forground_color);
-        graphics_context_set_stroke_color(ctx, s_background_color);
-
-        gpath_rotate_to(s_minute_arrow, TRIG_MAX_ANGLE * t->tm_min / 60);
-        gpath_draw_filled(ctx, s_minute_arrow);
-        gpath_draw_outline(ctx, s_minute_arrow);
-
-        gpath_rotate_to(s_hour_arrow, (TRIG_MAX_ANGLE * (((t->tm_hour % 12) * 6) + (t->tm_min / 10))) / (12 * 6));
-        gpath_draw_filled(ctx, s_hour_arrow);
-        gpath_draw_outline(ctx, s_hour_arrow);
-
-        // dot in the middle
-        graphics_context_set_fill_color(ctx, s_background_color);
-        graphics_fill_rect(ctx, GRect(bounds.size.w / 2 - 1, bounds.size.h / 2 - 1, 3, 3), 0, GCornerNone);
-
-    }
-    
-    if (global_config.showdigital == 1)
-    {
-        if (global_config.showseconds == 1) {
-            snprintf (s_digital_buffer,sizeof(s_digital_buffer),"%2d:%02d:%02d",(t->tm_hour%12?t->tm_hour%12:12),t->tm_min,t->tm_sec);
-        } else {
-            snprintf (s_digital_buffer,sizeof(s_digital_buffer),"%d:%02d %sM",(t->tm_hour%12?t->tm_hour%12:12),t->tm_min,(t->tm_hour<12?"A":"P"));
-        }
-    }
-    update_text_layers();
+          
+//     }
 }
 
 static int day_number (int y,int m,int d) {
@@ -172,6 +166,66 @@ static int day_number (int y,int m,int d) {
     y = y - m/10;
     return (365*y + y/4 - y/100 + y/400 + (m*306 + 5)/10 + ( d - 1 ));
 }
+
+int leapYearFeb(int year, int mon) {
+    int flag = 0;
+    if (year % 100 == 0) {
+        if (year % 400 == 0) {
+            if (mon == 2) {
+                flag = 1;
+            }
+        }
+    } else if (year % 4 == 0) {
+        if (mon == 2) {
+            flag = 1;
+        }
+    }
+    return (flag);
+}
+
+static int daysInMon[] = {31, 28, 31, 30, 31, 30,31, 31, 30, 31, 30, 31};
+static void long_difference (int years_months,char *d_buffer, int length,struct tm *d_now, struct tm *d_then) {
+    int days = d_then->tm_mday;
+    int month = d_then->tm_mon + 1;
+    int year = d_then->tm_year + 1900;
+    
+    days = daysInMon[month - 1] - days + 1;
+
+    /* check for leap if true increase feb days by 1*/
+    if (leapYearFeb(year, month)) {
+        days = days + 1;
+    }
+
+    /* no.of days, months, years calculation */
+    days = days + d_now->tm_mday;
+    month = (12 - month) + (d_now->tm_mon);
+    year = (d_now->tm_year + 1900) - year - 1;
+
+    /* Leap year check */
+    if (leapYearFeb((d_now->tm_year + 1900), (d_now->tm_mon + 1))) {
+        if (days >= (daysInMon[d_now->tm_mon] + 1)) {
+            days = days - (daysInMon[d_now->tm_mon] +1);
+            month = month + 1;
+        }
+        } else if (days >= daysInMon[d_now->tm_mon]) {
+        days = days - (daysInMon[d_now->tm_mon]);
+        month = month + 1;
+    }
+
+    if (month >= 12) {
+        year = year + 1;
+        month = month - 12;
+    }
+    if (years_months == 1) {
+        snprintf (d_buffer,length,"%dy, %dm, %dd",year,month,days);
+    } else {
+        month = month + year*12;
+        snprintf (d_buffer,length,"%dm, %dd",month,days);
+    }
+#ifdef DO_DEBUG_LOGS
+    APP_LOG(APP_LOG_LEVEL_DEBUG,"Difference : %d - %s - %d:%d:%d",length,d_buffer, year,month,days);
+#endif
+}  
 
 static void update_counter (struct tm *now_secs) {
     // Countdown update
@@ -199,6 +253,20 @@ static void update_counter (struct tm *now_secs) {
             }
             snprintf (s_count_buffer,sizeof(s_count_buffer),"%d Days",difference);
             break;
+        case FMT_MONTHS :
+            if (days_now > days_counter) {
+                long_difference (0,s_count_buffer,sizeof(s_count_buffer), now,&then);
+            } else {
+                long_difference (0,s_count_buffer,sizeof(s_count_buffer),&then,now);
+            }
+            break;
+        case FMT_LONG :
+            if (days_now > days_counter) {
+                long_difference (1,s_count_buffer,sizeof(s_count_buffer), now,&then);
+            } else {
+                long_difference (1,s_count_buffer,sizeof(s_count_buffer),&then,now);
+            }
+            break;            
         case FMT_ZEN :
             snprintf (s_count_buffer,sizeof(s_count_buffer),"%d hrs,%d mins",now->tm_hour,now->tm_min);
             break;
@@ -319,9 +387,22 @@ static void handle_second_tick(struct tm *tick_time, TimeUnits units_changed) {
         APP_LOG(APP_LOG_LEVEL_DEBUG,"No Shaky Shaky");
     }
 #endif
-    
-    
+
+    if (global_config.showdigital == 1)
+    {
+        if (global_config.showseconds == 1) {
+            strftime(s_digital_buffer, sizeof(s_digital_buffer), clock_is_24h_style() ? "%H:%M:%S" : "%I:%M:%S", tick_time);
+        } else {
+            strftime(s_digital_buffer, sizeof(s_digital_buffer), clock_is_24h_style() ? "%H:%M" : "%I:%M %p", tick_time);
+        }
+        text_layer_set_text(s_digital_label, s_digital_buffer);
+#ifdef DO_FULL_LOGS
+        APP_LOG(APP_LOG_LEVEL_DEBUG,"s_digital_buffer : %s",s_digital_buffer);
+#endif
+    }
+   
     layer_mark_dirty(window_get_root_layer(s_window));
+    update_text_layers();
 }
 
 /* App Message Handelers */
@@ -385,8 +466,9 @@ static void inbox_received_handler(DictionaryIterator *iter, void *context) {
                 APP_LOG (APP_LOG_LEVEL_DEBUG,"INFO: Seconds CHanged %d",t->value->int8);
 #endif
                 global_config.showseconds = t->value->int8;
-                tick_timer_service_unsubscribe();
-                tick_timer_service_subscribe(((global_config.showseconds == 1) ? SECOND_UNIT : MINUTE_UNIT), handle_second_tick);
+                new_face = 1;
+               tick_timer_service_unsubscribe();
+               tick_timer_service_subscribe(((global_config.showseconds == 1) ? SECOND_UNIT : MINUTE_UNIT), handle_second_tick);
                 break;
             case KEY_SHOWTRIANGLE :
 #ifdef DO_DEBUG_LOGS
@@ -466,18 +548,21 @@ static void inbox_received_handler(DictionaryIterator *iter, void *context) {
                 APP_LOG (APP_LOG_LEVEL_DEBUG,"INFO: ShowaNALOGUE Changed %d",t->value->int8);
 #endif
                 global_config.showanalogue = t->value->int8;
+                new_face = 1;
                 break;
             case KEY_DIGITAL:
 #ifdef DO_DEBUG_LOGS
                 APP_LOG (APP_LOG_LEVEL_DEBUG,"INFO: ShowDigital Changed %d",t->value->int8);
 #endif
                 global_config.showdigital = t->value->int8;
+                new_face = 1;
                 break;
             case KEY_DIGITALCOLOR:
 #ifdef DO_DEBUG_LOGS
                 APP_LOG (APP_LOG_LEVEL_DEBUG,"INFO: DigitalColor Changed %d",(int)t->value->int32);
 #endif
                 global_config.digitalcolor = t->value->int32;
+                new_face = 1;
                 break;
         }
         t = dict_read_next(iter);
@@ -720,6 +805,7 @@ static void init() {
 //     resource_init_current_app(&APP_RESOURCES);
     init_config();
     
+    new_face = 1;
     s_window = window_create();
     time_font = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_DIGITAL_24));
 

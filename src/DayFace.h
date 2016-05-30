@@ -2,11 +2,11 @@
 
 #include "pebble.h"
 
-// #define DO_DEBUG_LOGS
-// #define DO_FULL_LOGS
+#define DO_DEBUG_LOGS
+#define DO_FULL_LOGS
 
 #define STORAGE_VERSION_KEY    99
-#define STORAGE_VERSION        2
+#define STORAGE_VERSION        4
 
 #define LOW_BATTERY     10
 
@@ -42,11 +42,16 @@ static int s_weather_updated = 0;
 
 static int s_hourly_done = 0;
 static const uint32_t const segments[] = { 200, 400, 200, 400, 200 };
+
+static int new_face;
+
 #define SHAKE_TIME  0
 
 #define FMT_DAYS    1
-#define FMT_ZEN     2
-#define FMT_BLANK   3
+#define FMT_MONTHS  2
+#define FMT_LONG    3
+#define FMT_ZEN     4
+#define FMT_BLANK   5
 
 #define KEY_COUNTFROM 0
 
