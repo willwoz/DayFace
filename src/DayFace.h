@@ -6,7 +6,7 @@
 #define DO_FULL_LOGS
 
 #define STORAGE_VERSION_KEY    99
-#define STORAGE_VERSION        4
+#define STORAGE_VERSION        5
 
 #define LOW_BATTERY     10
 
