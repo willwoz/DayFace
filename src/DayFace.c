@@ -33,17 +33,17 @@ static void bluetooth_callback(bool connected) {
 
 static void update_text_layers() {
     /*just cause I can't think of a better way to do this*/
+#ifdef UPDATE_DEBUG
+    APP_LOG(APP_LOG_LEVEL_DEBUG," - Update Text Layers");
+#endif
+
     text_layer_set_background_color(s_date_label, s_background_color);
     text_layer_set_text_color(s_date_label, s_forground_color);
     layer_set_hidden(text_layer_get_layer(s_date_label),(global_config.showdate == 0));
     
     text_layer_set_background_color(s_loc_label, s_background_color);
     text_layer_set_text_color(s_loc_label, s_forground_color);
-    if (global_config.showweather == 1) {
-        layer_set_hidden(text_layer_get_layer(s_loc_label),(global_config.showlocation == 0));
-    } else {
-        layer_set_hidden(text_layer_get_layer(s_loc_label),true);
-    }
+    layer_set_hidden(text_layer_get_layer(s_loc_label),(global_config.showlocation == 0));
 
     text_layer_set_background_color(s_count_label, s_background_color);
     text_layer_set_text_color(s_count_label, s_forground_color);
@@ -52,9 +52,6 @@ static void update_text_layers() {
     
     text_layer_set_background_color(s_battery_label,s_background_color);
     text_layer_set_text_color(s_battery_label, s_battery_color);
-// #ifdef DO_DEBUG_LOGS
-//     APP_LOG(APP_LOG_LEVEL_DEBUG,"Show: %d, Low %d, hidden %d", global_config.battery,(charge_percent < LOW_BATTERY), ((global_config.battery == 1) || (charge_percent < LOW_BATTERY)));
-// #endif
     layer_set_hidden(text_layer_get_layer(s_battery_label),!((global_config.battery == 1) || (charge_percent <= LOW_BATTERY)));
    
     text_layer_set_background_color(s_weather_label,s_background_color);
@@ -141,7 +138,7 @@ static void hands_update_proc(Layer *layer, GContext *ctx) {
             }
 
         // minute/hour hand
-            graphics_context_set_fill_color(ctx, s_forground_color);
+            graphics_context_set_fill_color(ctx, GColorFromHEX(digital_color[global_config.digitalcolor]));
             graphics_context_set_stroke_color(ctx, s_background_color);
 
             gpath_rotate_to(s_minute_arrow, TRIG_MAX_ANGLE * t->tm_min / 60);
@@ -162,9 +159,9 @@ static void hands_update_proc(Layer *layer, GContext *ctx) {
 }
 
 static int day_number (int y,int m,int d) {
-    m = (m + 9) % 12;
+    int dn = m = (m + 9) % 12;
     y = y - m/10;
-    return (365*y + y/4 - y/100 + y/400 + (m*306 + 5)/10 + ( d - 1 ));
+    return (365*y + y/4 - y/100 + y/400 + (m*306 + 5)/10 + d);
 }
 
 int leapYearFeb(int year, int mon) {
@@ -216,12 +213,33 @@ static void long_difference (int years_months,char *d_buffer, int length,struct 
         year = year + 1;
         month = month - 12;
     }
-    if (years_months == 1) {
-        snprintf (d_buffer,length,"%dy, %dm, %dd",year,month,days);
-    } else {
-        month = month + year*12;
-        snprintf (d_buffer,length,"%dm, %dd",month,days);
+    
+/*  today doesn't count
+    days = days - 1;
+    if (days < 0) {
+        days =0; month--;
+        if (month < 0) {
+            month = 0; year--;
+            if (year <0) year = 0;
+        }
     }
+*/
+
+    if ((years_months == 0) || (year == 0)) {
+        month = month + year*12;
+        if (days == 0) {
+            snprintf (d_buffer,length,"%d Months",month);
+        } else {
+            snprintf (d_buffer,length,"%dm, %dd",month,days);
+        }
+    } else {
+        if (days == 0) {
+            snprintf (d_buffer,length,"%dy, %dm",year,month);
+        } else {
+            snprintf (d_buffer,length,"%dy, %dm, %dd",year,month,days);
+        }
+    }
+    
 #ifdef DO_DEBUG_LOGS
     APP_LOG(APP_LOG_LEVEL_DEBUG,"Difference : %d - %s - %d:%d:%d",length,d_buffer, year,month,days);
 #endif
@@ -236,7 +254,7 @@ static void update_counter (struct tm *now_secs) {
     int difference = 1;
     
     if (now_secs == NULL) {
-        time_t t = time(NULL);
+        time_t t = time(NULL) - 86400;
         now = localtime(&t);
     } else {
         now = now_secs;
@@ -297,9 +315,13 @@ static void update_battery_handler(BatteryChargeState charge_state) {
 }
 
 static void date_update_proc(Layer *layer, GContext *ctx) {
-    time_t t = time(NULL);
-    struct tm *now = localtime(&t);
-
+    time_t t;
+    struct tm *now,*yesterday;
+    
+    t = time(NULL);
+    
+    now = localtime(&t);
+    
     s_background_color = ((global_config.white == 0) ? GColorBlack : GColorWhite);
     s_forground_color = ((global_config.white == 0) ? GColorWhite : GColorBlack);
 //     update_text_layers();
@@ -307,8 +329,12 @@ static void date_update_proc(Layer *layer, GContext *ctx) {
     strftime(s_date_buffer, sizeof(s_date_buffer), "%a %d", now);
     text_layer_set_text(s_date_label, s_date_buffer);
   
-    update_counter(now);
-    
+    t = t - 86400;
+    yesterday = localtime(&t);
+    update_counter(yesterday);
+#ifdef UPDATE_DEBUG    
+    APP_LOG(APP_LOG_LEVEL_DEBUG,"date_update_proc - Update Text");
+#endif
     update_text_layers();
 }
 
@@ -402,7 +428,10 @@ static void handle_second_tick(struct tm *tick_time, TimeUnits units_changed) {
     }
    
     layer_mark_dirty(window_get_root_layer(s_window));
-    update_text_layers();
+#ifdef UPDATE_DEBUG    
+//    APP_LOG(APP_LOG_LEVEL_DEBUG,"handle_second_tick - Update Text");
+#endif
+//    update_text_layers();
 }
 
 /* App Message Handelers */
@@ -596,6 +625,10 @@ static void inbox_received_handler(DictionaryIterator *iter, void *context) {
     then.tm_mon = global_config.month -1;
     then.tm_mday = global_config.day;
     update_counter (NULL);
+#ifdef UPDATE_DEBUG    
+    APP_LOG(APP_LOG_LEVEL_DEBUG,"inbox_received_handler - Update Text");
+#endif
+
     update_text_layers();
 }
 
@@ -687,6 +720,9 @@ static void window_load(Window *window) {
     //show batter state from start
     update_battery_handler( battery_state_service_peek() );
 
+#ifdef UPDATE_DEBUG    
+    APP_LOG(APP_LOG_LEVEL_DEBUG,"window_load - Update Text");
+#endif
     update_text_layers();//    update_battery_handler( battery_state_service_peek() );
 }
 

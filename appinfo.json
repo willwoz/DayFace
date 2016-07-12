@@ -37,6 +37,7 @@
             }
         ]
     },
+    "enableMultiJS": true,
     "sdkVersion": "3",
     "shortName": "DayFace",
     "targetPlatforms": [
@@ -45,7 +46,7 @@
         "chalk"
     ],
     "uuid": "9c9fdbbe-a33a-48f1-bd6a-345a655ebb9f",
-    "versionLabel": "4.1",
+    "versionLabel": "5",
     "watchapp": {
         "watchface": true
     }
