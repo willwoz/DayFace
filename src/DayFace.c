@@ -228,7 +228,7 @@ static void long_difference (int years_months,char *d_buffer, int length,struct 
     if ((years_months == 0) || (year == 0)) {
         month = month + year*12;
         if (days == 0) {
-            snprintf (d_buffer,length,"%d Months",month);
+            snprintf (d_buffer,length,"%dm",month);
         } else {
             snprintf (d_buffer,length,"%dm, %dd",month,days);
         }
@@ -254,7 +254,7 @@ static void update_counter (struct tm *now_secs) {
     int difference = 1;
     
     if (now_secs == NULL) {
-        time_t t = time(NULL) - 86400;
+        time_t t = time(NULL);
         now = localtime(&t);
     } else {
         now = now_secs;
@@ -315,13 +315,9 @@ static void update_battery_handler(BatteryChargeState charge_state) {
 }
 
 static void date_update_proc(Layer *layer, GContext *ctx) {
-    time_t t;
-    struct tm *now,*yesterday;
-    
-    t = time(NULL);
-    
-    now = localtime(&t);
-    
+    time_t t = time(NULL);
+    struct tm *now = localtime(&t);
+
     s_background_color = ((global_config.white == 0) ? GColorBlack : GColorWhite);
     s_forground_color = ((global_config.white == 0) ? GColorWhite : GColorBlack);
 //     update_text_layers();
@@ -329,9 +325,7 @@ static void date_update_proc(Layer *layer, GContext *ctx) {
     strftime(s_date_buffer, sizeof(s_date_buffer), "%a %d", now);
     text_layer_set_text(s_date_label, s_date_buffer);
   
-    t = t - 86400;
-    yesterday = localtime(&t);
-    update_counter(yesterday);
+    update_counter(now);
 #ifdef UPDATE_DEBUG    
     APP_LOG(APP_LOG_LEVEL_DEBUG,"date_update_proc - Update Text");
 #endif

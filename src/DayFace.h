@@ -2,12 +2,12 @@
 
 #include "pebble.h"
 
-// #define DO_DEBUG_LOGS
-// #define DO_FULL_LOGS
-// #define UPDATE_DEBUG
+//#define DO_DEBUG_LOGS
+//#define DO_FULL_LOGS
+//#define UPDATE_DEBUG
 
 #define STORAGE_VERSION_KEY    99
-#define STORAGE_VERSION        5
+#define STORAGE_VERSION        6
 
 #define LOW_BATTERY     10
 
