@@ -81,7 +81,7 @@ static void bg_update_proc(Layer *layer, GContext *ctx) {
         gpath_draw_outline(ctx, s_triangle);
     }
 
-    if (!global_config.cleanface) {
+    if (!global_config.cleanface && global_config.showanalogue) {
         graphics_context_set_fill_color(ctx, s_forground_color);
         for (i = 0; i < NUM_CLOCK_TICKS_WHITE; ++i) {
             gpath_move_to(s_tick_paths[i], GPoint(x_offset, y_offset));
