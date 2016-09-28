@@ -2,12 +2,12 @@
 
 #include "pebble.h"
 
-//#define DO_DEBUG_LOGS
-//#define DO_FULL_LOGS
-//#define UPDATE_DEBUG
+#define DO_DEBUG_LOGS
+#define DO_FULL_LOGS
+#define UPDATE_DEBUG
 
 #define STORAGE_VERSION_KEY    99
-#define STORAGE_VERSION        6
+#define STORAGE_VERSION        7
 
 #define LOW_BATTERY     10
 
@@ -35,16 +35,20 @@ struct dayface_config {
     uint8_t cleanface;
     uint8_t showanalogue; /*analogue clock*/
     uint8_t showdigital;
+    uint8_t bedtime;
+    uint8_t wakeup;
 } __attribute__((__packed__)) global_config;
 
 #define WEATHER_POLL_DIV 15
-static int s_time_to_poll;
-static int s_weather_updated = 0;
+int s_time_to_poll;
+int s_weather_updated = 0;
 
 static int s_hourly_done = 0;
 static const uint32_t const segments[] = { 200, 400, 200, 400, 200 };
 
-static int new_face;
+int global_daytime = 1;
+
+int new_face;
 
 #define SHAKE_TIME  0
 
@@ -81,8 +85,10 @@ static int new_face;
 #define KEY_TEMPERATURE     20
 #define KEY_CONDITIONS      21
 #define KEY_LOCATION        22
+#define KEY_BEDTIME         23
+#define KEY_WAKEUP          24
 
-#define KEY_TOTAL_KEYS      22
+#define KEY_TOTAL_KEYS      24
 
 static const uint32_t const digital_color[] = {
     0xFFFFFF, 0xFFFFFF, 0x000000, 0xFF0000, 0x00FF00, 0x0000FF, 0xFFFF00, 0xFF00FF

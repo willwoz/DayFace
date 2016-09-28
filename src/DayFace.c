@@ -132,7 +132,7 @@ static void hands_update_proc(Layer *layer, GContext *ctx) {
             };
 
         // second hand
-            if (global_config.showseconds == 1) {
+            if ((global_config.showseconds == 1) && (global_daytime == 1)) {
                 graphics_context_set_stroke_color(ctx, COLOR_FALLBACK(GColorRed,s_forground_color));
                 graphics_draw_line(ctx, second_hand, center);
             }
@@ -377,12 +377,29 @@ static void update_weather(struct tm *tick_time) {
 }
 static void handle_second_tick(struct tm *tick_time, TimeUnits units_changed) {
     
+    
+    global_daytime = ((tick_time->tm_hour >= global_config.wakeup) && (tick_time->tm_hour < global_config.bedtime));
+    if (units_changed & SECOND_UNIT) {
+        if (global_daytime == 0)
+        {
+            tick_timer_service_unsubscribe();
+            tick_timer_service_subscribe(MINUTE_UNIT, handle_second_tick);
+        }
+    }
+    else {
+        if (global_config.showseconds == 1)
+        {
+            tick_timer_service_unsubscribe();
+            tick_timer_service_subscribe(SECOND_UNIT, handle_second_tick);
+        }
+    }
+    
     if (global_config.showweather == 1)
         update_weather(tick_time);
     
     if (global_config.hourly == 1) {
 #ifdef DO_FULL_LOGS
-        APP_LOG(APP_LOG_LEVEL_DEBUG,"hourly: %d - Minutes: %d",s_hourly_done,tick_time->tm_min);
+        APP_LOG(APP_LOG_LEVEL_DEBUG,"hourly: %d - Minutes: %d - daytime: %d->%d %d",s_hourly_done,tick_time->tm_min,global_config.wakeup,global_config.bedtime,global_daytime);
 #endif
         if (tick_time->tm_min == SHAKE_TIME) {
             if (s_hourly_done == 0) {
@@ -793,6 +810,8 @@ static void init_config() {
             global_config.showanalogue = 1;
             global_config.showdigital = 0;
             global_config.digitalcolor = 1;
+            global_config.bedtime = 18;
+            global_config.wakeup = 6;
             
 #ifdef DO_DEBUG_LOGS
             APP_LOG (APP_LOG_LEVEL_DEBUG,"Set New version: %d year - %d, month - %d, - day %d", version,(int)global_config.year, global_config.month, global_config.day);
