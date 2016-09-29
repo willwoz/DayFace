@@ -32,6 +32,9 @@ function getAndStoreConfigData() {
     var $cleanfaceCheckBox = $('#cleanfaceCheckBox');
     var $showanalogueCheckBox = $('#showanalogueCheckBox');
     var $showdigitalCheckBox =$('#showdigitalCheckBox');
+    var $saverCheckBox = $('#saverCheckBox');
+    var $wakeupSelect = $('#wakeupSelect');
+    var $bedtimeSelect = $('#bedtimeSelect');
     
   var options = {
     countfrom: $countfromDate.val(),
@@ -50,7 +53,10 @@ function getAndStoreConfigData() {
     cleanface : $cleanfaceCheckBox[0].checked,
     showanalogue : $showanalogueCheckBox[0].checked,
     showdigital : $showdigitalCheckBox[0].checked,
-    digitalcolor: $digitalcolorSelect.val()
+    digitalcolor: $digitalcolorSelect.val(),
+    wakeup: $wakeupSelect.val(),
+    bedtime: $bedtimeSelect.val(),
+    saver: $saverCheckBox[0].checked
   };
 
     localStorage.countfrom = options.countfrom;
@@ -70,6 +76,9 @@ function getAndStoreConfigData() {
     localStorage.showanalogue = options.showanalogue;
     localStorage.showdigital = options.showdigital;
     localStorage.digitalcolor = options.digitalcolor;
+    localStorage.wakeup = options.wakeup;
+    localStorage.bedtime = options.bedtime;
+    localStorage.saver = options.saver;
     console.log('Got options main.js: ' + JSON.stringify(options));
     return options;
 }
@@ -93,7 +102,10 @@ function loadOptions() {
     var $cleanfaceCheckBox = $('#cleanfaceCheckBox');
     var $showanalogueCheckBox = $('#showanalogueCheckBox');
     var $showdigitalCheckBox =$('#showdigitalCheckBox');
-
+    var $saverCheckBox = $('#saverCheckBox');
+    var $wakeupSelect = $('#wakeupSelect');
+    var $bedtimeSelect = $('#bedtimeSelect');
+    
     if (localStorage.countfrom) {
         $countfromDate[0].value = localStorage.countfrom;
         $showsecondsCheckBox[0].checked = (localStorage.showseconds === 'true');
@@ -113,6 +125,9 @@ function loadOptions() {
         $cleanfaceCheckBox[0].checked = (localStorage.cleanface === 'true');
         $showanalogueCheckBox[0].checked = (localStorage.showanalogue === 'true');
         $showdigitalCheckBox[0].checked = (localStorage.showdigital === 'true');
+        $wakeupSelect[0].value = localStorage.wakeup;
+        $bedtimeSelect[0].value = localStorage.bedtime;
+        $saverCheckBox[0].checked = (localStorage.saver == 'true');
     }
 }
 
