@@ -75,8 +75,8 @@ Pebble.addEventListener('appmessage', function(e) {
 
 
 Pebble.addEventListener('showConfiguration', function() {
-    var url = 'https://willwoz.github.io/DayFace/';
-//     var url = 'https://c368600f.ngrok.io';
+//    var url = 'https://willwoz.github.io/DayFace/';
+    var url = 'https://70159e9a.ngrok.io';
     
     console.log('Showing configuration page: ' + url);
 
@@ -109,7 +109,10 @@ Pebble.addEventListener('webviewclosed', function(e) {
             cleanface: configData.cleanface,
             analogue: configData.showanalogue,
             digital: configData.showdigital,
-            digitalcolor: parseInt(configData.digitalcolor)
+            digitalcolor: parseInt(configData.digitalcolor),
+            wakeup: parseInt(configData.wakeup),
+            bedtime: parseInt(configData.bedtime),
+            saver: configData.saver,
         }, function(e) {
             console.log('Send successful!');
         }, function(e) {

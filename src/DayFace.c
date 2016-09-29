@@ -159,7 +159,7 @@ static void hands_update_proc(Layer *layer, GContext *ctx) {
 }
 
 static int day_number (int y,int m,int d) {
-    int dn = m = (m + 9) % 12;
+//    int dn = m = (m + 9) % 12;
     y = y - m/10;
     return (365*y + y/4 - y/100 + y/400 + (m*306 + 5)/10 + d);
 }
@@ -378,19 +378,24 @@ static void update_weather(struct tm *tick_time) {
 static void handle_second_tick(struct tm *tick_time, TimeUnits units_changed) {
     
     
-    global_daytime = ((tick_time->tm_hour >= global_config.wakeup) && (tick_time->tm_hour < global_config.bedtime));
-    if (units_changed & SECOND_UNIT) {
-        if (global_daytime == 0)
-        {
-            tick_timer_service_unsubscribe();
-            tick_timer_service_subscribe(MINUTE_UNIT, handle_second_tick);
+    global_daytime = (((tick_time->tm_hour >= global_config.wakeup) && (tick_time->tm_hour < global_config.bedtime)) || (global_config.saver == 0));
+    if (global_config.saver == 1) {
+        if (units_changed & SECOND_UNIT) {
+            if (global_daytime == 0)
+            {
+                tick_timer_service_unsubscribe();
+                tick_timer_service_subscribe(MINUTE_UNIT, handle_second_tick);
+            }
         }
-    }
-    else {
-        if (global_config.showseconds == 1)
-        {
-            tick_timer_service_unsubscribe();
-            tick_timer_service_subscribe(SECOND_UNIT, handle_second_tick);
+        else {
+            if (global_config.showseconds == 1)
+            {
+                if (global_daytime == 1)
+                {
+                    tick_timer_service_unsubscribe();
+                    tick_timer_service_subscribe(SECOND_UNIT, handle_second_tick);
+                }
+            }
         }
     }
     
@@ -428,7 +433,11 @@ static void handle_second_tick(struct tm *tick_time, TimeUnits units_changed) {
     if (global_config.showdigital == 1)
     {
         if (global_config.showseconds == 1) {
-            strftime(s_digital_buffer, sizeof(s_digital_buffer), clock_is_24h_style() ? "%H:%M:%S" : "%I:%M:%S", tick_time);
+            if (global_daytime == 1) {
+                strftime(s_digital_buffer, sizeof(s_digital_buffer), clock_is_24h_style() ? "%H:%M:%S" : "%I:%M:%S", tick_time);
+            } else {
+                strftime(s_digital_buffer, sizeof(s_digital_buffer), clock_is_24h_style() ? "%H:%M" : "%I:%M %p", tick_time);
+            }    
         } else {
             strftime(s_digital_buffer, sizeof(s_digital_buffer), clock_is_24h_style() ? "%H:%M" : "%I:%M %p", tick_time);
         }
@@ -603,6 +612,15 @@ static void inbox_received_handler(DictionaryIterator *iter, void *context) {
 #endif
                 global_config.digitalcolor = t->value->int32;
                 new_face = 1;
+                break;
+            case KEY_BEDTIME:
+                global_config.bedtime = t->value->int8;
+                break;
+            case KEY_WAKEUP :
+                global_config.wakeup = t->value->int8;
+                break;
+            case KEY_SAVER:
+                global_config.saver = t->value->int8;
                 break;
         }
         t = dict_read_next(iter);
@@ -812,6 +830,7 @@ static void init_config() {
             global_config.digitalcolor = 1;
             global_config.bedtime = 18;
             global_config.wakeup = 6;
+            global_config.saver = 1;
             
 #ifdef DO_DEBUG_LOGS
             APP_LOG (APP_LOG_LEVEL_DEBUG,"Set New version: %d year - %d, month - %d, - day %d", version,(int)global_config.year, global_config.month, global_config.day);
