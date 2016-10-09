@@ -48,7 +48,8 @@ static int s_hourly_done = 0;
 static const uint32_t const segments[] = { 200, 400, 200, 400, 200 };
 
 int global_daytime = 1;
-
+int global_seconds = 0;
+int global_units_changed;
 int new_face;
 
 #define SHAKE_TIME  0

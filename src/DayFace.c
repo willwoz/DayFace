@@ -59,7 +59,7 @@ static void update_text_layers() {
     layer_set_hidden(text_layer_get_layer(s_weather_label),(global_config.showweather == 0));
     
     text_layer_set_background_color(s_digital_label,s_background_color);
-    text_layer_set_text_color(s_digital_label, GColorFromHEX(digital_color[global_config.digitalcolor]));
+    text_layer_set_text_color(s_digital_label, GColorFromHEX(global_config.digitalcolor));
     layer_set_hidden(text_layer_get_layer(s_digital_label),(global_config.showdigital == 0));
 }
     
@@ -119,7 +119,7 @@ static void hands_update_proc(Layer *layer, GContext *ctx) {
     int32_t second_angle = TRIG_MAX_ANGLE * t->tm_sec / 60;
     
 #ifdef DO_FULL_LOGS
-    APP_LOG(APP_LOG_LEVEL_DEBUG,"Tick-Tock H:%d M:%d S:%d - show_seconds %d - new_face %d",t->tm_hour,t->tm_min,t->tm_sec,global_config.showseconds,new_face);
+//    APP_LOG(APP_LOG_LEVEL_DEBUG,"Tick-Tock H:%d M:%d S:%d - show_seconds %d - new_face %d",t->tm_hour,t->tm_min,t->tm_sec,global_config.showseconds,new_face);
 #endif
 //     if (new_face == 1 || global_config.showseconds == 1 || t->tm_sec == 0)
 //     {
@@ -138,16 +138,16 @@ static void hands_update_proc(Layer *layer, GContext *ctx) {
             }
 
         // minute/hour hand
-            graphics_context_set_fill_color(ctx, GColorFromHEX(digital_color[global_config.digitalcolor]));
+            graphics_context_set_fill_color(ctx, GColorFromHEX(global_config.digitalcolor));
             graphics_context_set_stroke_color(ctx, s_background_color);
 
-            gpath_rotate_to(s_minute_arrow, TRIG_MAX_ANGLE * t->tm_min / 60);
-            gpath_draw_filled(ctx, s_minute_arrow);
-            gpath_draw_outline(ctx, s_minute_arrow);
-
-            gpath_rotate_to(s_hour_arrow, (TRIG_MAX_ANGLE * (((t->tm_hour % 12) * 6) + (t->tm_min / 10))) / (12 * 6));
-            gpath_draw_filled(ctx, s_hour_arrow);
-            gpath_draw_outline(ctx, s_hour_arrow);
+                gpath_rotate_to(s_minute_arrow, TRIG_MAX_ANGLE * t->tm_min / 60);
+                gpath_draw_filled(ctx, s_minute_arrow);
+                gpath_draw_outline(ctx, s_minute_arrow);
+            
+                gpath_rotate_to(s_hour_arrow, (TRIG_MAX_ANGLE * (((t->tm_hour % 12) * 6) + (t->tm_min / 10))) / (12 * 6));
+                gpath_draw_filled(ctx, s_hour_arrow);
+                gpath_draw_outline(ctx, s_hour_arrow);
 
             // dot in the middle
             graphics_context_set_fill_color(ctx, s_background_color);
@@ -159,7 +159,7 @@ static void hands_update_proc(Layer *layer, GContext *ctx) {
 }
 
 static int day_number (int y,int m,int d) {
-//    int dn = m = (m + 9) % 12;
+    m = (m + 9) % 12;
     y = y - m/10;
     return (365*y + y/4 - y/100 + y/400 + (m*306 + 5)/10 + d);
 }
@@ -325,6 +325,7 @@ static void date_update_proc(Layer *layer, GContext *ctx) {
     strftime(s_date_buffer, sizeof(s_date_buffer), "%a %d", now);
     text_layer_set_text(s_date_label, s_date_buffer);
   
+    
     update_counter(now);
 #ifdef UPDATE_DEBUG    
     APP_LOG(APP_LOG_LEVEL_DEBUG,"date_update_proc - Update Text");
@@ -379,56 +380,57 @@ static void handle_second_tick(struct tm *tick_time, TimeUnits units_changed) {
     
     
     global_daytime = (((tick_time->tm_hour >= global_config.wakeup) && (tick_time->tm_hour < global_config.bedtime)) || (global_config.saver == 0));
+    global_units_changed = units_changed;
+    
     if (global_config.saver == 1) {
-        if (units_changed & SECOND_UNIT) {
-            if (global_daytime == 0)
+#ifdef DO_FULL_LOGS
+            APP_LOG(APP_LOG_LEVEL_DEBUG,"Second Tick %d Daytime %d units_changed %d",units_changed & SECOND_UNIT,global_daytime,units_changed);
+#endif
+        if (global_daytime == 0)
+        {
+            if (global_seconds == 1)
             {
+#ifdef DO_FULL_LOGS
+            APP_LOG(APP_LOG_LEVEL_DEBUG,"CHange to Minutes - Second Tick %d Daytime %d",units_changed & SECOND_UNIT,global_daytime);
+#endif
                 tick_timer_service_unsubscribe();
                 tick_timer_service_subscribe(MINUTE_UNIT, handle_second_tick);
+                global_seconds = 0;
             }
         }
         else {
             if (global_config.showseconds == 1)
             {
-                if (global_daytime == 1)
+                if (global_seconds == 0)
                 {
+#ifdef DO_FULL_LOGS
+            APP_LOG(APP_LOG_LEVEL_DEBUG,"CHange to Seconds Second Tick %d Daytime %d",units_changed & SECOND_UNIT,global_daytime);
+#endif
                     tick_timer_service_unsubscribe();
                     tick_timer_service_subscribe(SECOND_UNIT, handle_second_tick);
+                    global_seconds = 1;
                 }
             }
         }
     }
     
-    if (global_config.showweather == 1)
-        update_weather(tick_time);
-    
-    if (global_config.hourly == 1) {
 #ifdef DO_FULL_LOGS
-        APP_LOG(APP_LOG_LEVEL_DEBUG,"hourly: %d - Minutes: %d - daytime: %d->%d %d",s_hourly_done,tick_time->tm_min,global_config.wakeup,global_config.bedtime,global_daytime);
+        APP_LOG(APP_LOG_LEVEL_DEBUG,"second_handle - hourly: %d - Minutes: %d - daytime: %d->%d %d",s_hourly_done,tick_time->tm_min,global_config.wakeup,global_config.bedtime,global_daytime);
 #endif
-        if (tick_time->tm_min == SHAKE_TIME) {
-            if (s_hourly_done == 0) {
-                // Vibe pattern: ON for 200ms, OFF for 100ms, ON for 400ms:
 
-                VibePattern pat = {
-                    .durations = segments,
-                    .num_segments = ARRAY_LENGTH(segments),
+    if (units_changed & MINUTE_UNIT)
+        if (global_config.showweather == 1)
+            update_weather(tick_time);
+    
+    if (units_changed & HOUR_UNIT) {
+        if (global_config.hourly == 1) {
+            VibePattern pat = {
+                .durations = segments,
+                .num_segments = ARRAY_LENGTH(segments),
                 };
-                vibes_enqueue_custom_pattern(pat);
-#ifdef DO_DEBUG_LOGS
-        APP_LOG(APP_LOG_LEVEL_DEBUG,"Doodle Shake Shake");
-#endif
-                s_hourly_done = 1;
-            }
-        } else {
-            s_hourly_done = 0;
+            vibes_enqueue_custom_pattern(pat);
         }
-    } 
-#ifdef DO_DEBUG_LOGS
-    else {
-        APP_LOG(APP_LOG_LEVEL_DEBUG,"No Shaky Shaky");
     }
-#endif
 
     if (global_config.showdigital == 1)
     {
@@ -443,7 +445,7 @@ static void handle_second_tick(struct tm *tick_time, TimeUnits units_changed) {
         }
         text_layer_set_text(s_digital_label, s_digital_buffer);
 #ifdef DO_FULL_LOGS
-        APP_LOG(APP_LOG_LEVEL_DEBUG,"s_digital_buffer : %s",s_digital_buffer);
+//        APP_LOG(APP_LOG_LEVEL_DEBUG,"s_digital_buffer : %s",s_digital_buffer);
 #endif
     }
    
@@ -482,7 +484,7 @@ static void inbox_received_handler(DictionaryIterator *iter, void *context) {
                     s_current_temp = ((s_current_temp * 9) / 5) + 32;
                 snprintf (s_weather_buffer,sizeof(s_weather_buffer),"%d%s, %s",s_current_temp,((global_config.showfahrenheit == 1)?"F":"C"), s_current_conditions);
 #ifdef DO_DEBUG_LOGS
-                APP_LOG(APP_LOG_LEVEL_DEBUG,"Temerature Message: %d%s, %s",t->value->int8,((global_config.showfahrenheit == 1)?"F":"C"), s_current_conditions);
+//                APP_LOG(APP_LOG_LEVEL_DEBUG,"Temerature Message: %d%s, %s",t->value->int8,((global_config.showfahrenheit == 1)?"F":"C"), s_current_conditions);
 #endif
                 break;
             case KEY_CONDITIONS :
@@ -490,13 +492,13 @@ static void inbox_received_handler(DictionaryIterator *iter, void *context) {
                 snprintf (s_weather_buffer,sizeof(s_weather_buffer),"%d%s, %s",s_current_temp,((global_config.showfahrenheit == 1)?"F":"C"), s_current_conditions);
                 
 #ifdef DO_DEBUG_LOGS
-               APP_LOG(APP_LOG_LEVEL_DEBUG,"Condition Message: %d%s, %s",s_current_temp,((global_config.showfahrenheit == 1)?"F":"C"), s_current_conditions);
+//               APP_LOG(APP_LOG_LEVEL_DEBUG,"Condition Message: %d%s, %s",s_current_temp,((global_config.showfahrenheit == 1)?"F":"C"), s_current_conditions);
 #endif
                 break;
             case KEY_LOCATION :
                 snprintf (s_location_buffer,sizeof(s_location_buffer),"%s", t->value->cstring);
 #ifdef DO_DEBUG_LOGS
-               APP_LOG(APP_LOG_LEVEL_DEBUG,"Location: %s", s_location_buffer);
+//               APP_LOG(APP_LOG_LEVEL_DEBUG,"Location: %s", s_location_buffer);
 #endif
                 break;
                 
@@ -518,6 +520,7 @@ static void inbox_received_handler(DictionaryIterator *iter, void *context) {
                 new_face = 1;
                tick_timer_service_unsubscribe();
                tick_timer_service_subscribe(((global_config.showseconds == 1) ? SECOND_UNIT : MINUTE_UNIT), handle_second_tick);
+               global_seconds = (global_config.showseconds == 1);
                 break;
             case KEY_SHOWTRIANGLE :
 #ifdef DO_DEBUG_LOGS
@@ -732,7 +735,7 @@ static void window_load(Window *window) {
     text_layer_set_text_alignment(s_digital_label,GTextAlignmentCenter);
     text_layer_set_text(s_digital_label, s_digital_buffer);
     text_layer_set_background_color(s_digital_label,s_background_color);
-    text_layer_set_text_color(s_digital_label, GColorFromHEX(digital_color[global_config.digitalcolor]));
+    text_layer_set_text_color(s_digital_label, GColorFromHEX(global_config.digitalcolor));
     text_layer_set_font(s_digital_label, time_font);
     layer_add_child(s_date_layer, text_layer_get_layer(s_digital_label));
     layer_set_hidden(text_layer_get_layer(s_digital_label),(global_config.showdigital == 0));
@@ -827,7 +830,7 @@ static void init_config() {
             global_config.cleanface = 1;
             global_config.showanalogue = 1;
             global_config.showdigital = 0;
-            global_config.digitalcolor = 1;
+            global_config.digitalcolor = 16777215;
             global_config.bedtime = 18;
             global_config.wakeup = 6;
             global_config.saver = 1;
@@ -919,8 +922,11 @@ static void init() {
     
     if (global_config.showseconds == 1) {
         tick_timer_service_subscribe(SECOND_UNIT, handle_second_tick);
+        global_seconds = 1;
+
     } else {
         tick_timer_service_subscribe(MINUTE_UNIT, handle_second_tick);
+        global_seconds = 0;
     }
     
     // Register for Bluetooth connection updates
