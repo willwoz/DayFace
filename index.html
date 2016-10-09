@@ -47,15 +47,11 @@
             </label>
             <label class="item">
                 Detail Color
-                <select id="digitalcolorSelect" dir='rtl' class="item-select">
-                    <option class="item-select-option" value=1>White</option>
-                    <option class="item-select-option" value=2>Black</option>
-                    <option class="item-select-option" value=3>Red</option>
-                    <option class="item-select-option" value=4>Green</option>
-                    <option class="item-select-option" value=5>Blue</option>
-                    <option class="item-select-option" value=6>Yellow</option>
-                    <option class="item-select-option" value=7>Magenta</option>
-                </select>
+                <input id="digitalcolorSelect" type="text" class="item-color item-color-normal" value="#FFFFFF">
+            </label>
+            <label class="item">
+                White Background
+                <input id="whiteCheckBox" type="checkbox" class="item-toggle" unchecked>
             </label>
             <label class="item">
                 Show Seconds
@@ -110,10 +106,6 @@
             <label class="item">
                 Show Battery Meter
                 <input id="batteryCheckBox" type="checkbox" class="item-toggle" checked>
-            </label>
-            <label class="item">
-                White Background
-                <input id="whiteCheckBox" type="checkbox" class="item-toggle" unchecked>
             </label>
             <label class="item">
                 Hourly Shake
